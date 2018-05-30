@@ -1,0 +1,24 @@
+﻿using ClickHouseMigrator.Impl;
+using System;
+
+namespace ClickHouseMigrator
+{
+	public static class MigratorFactory
+	{
+		public static IMigrator Create(Arguments arguments)
+		{
+			var source = arguments.Source.ToLower();
+			switch (source)
+			{
+				case "mysql":
+					{
+						return new MySqlMigrator(arguments);
+					}
+				default:
+					{
+						throw new NotImplementedException($"Not impemented {source} migrator.");
+					}
+			}
+		}
+	}
+}

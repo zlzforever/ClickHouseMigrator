@@ -41,6 +41,13 @@ Use to migrate data from RDBMS to ClickHouse. Create database and table auto.
 					--targettb sku_sold
 					--drop true
 
+
+### RUN
+
+* 32  Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz
+* 128 G
+* 4T HDD * 4 RAID10 IOPS 3000
+
 ![DESIGN](https://github.com/zlzforever/ClickHouseMigrator/raw/master/images/example.png?raw=true)
 
 ### Buy me a coffe

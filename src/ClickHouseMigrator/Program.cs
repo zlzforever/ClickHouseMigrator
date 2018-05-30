@@ -44,6 +44,10 @@ namespace ClickHouseMigrator
 				{
 					a.TargetTable = a.SourceTable;
 				}
+				if (string.IsNullOrWhiteSpace(a.SourceHost))
+				{
+					a.SourceHost = "127.0.0.1";
+				}
 				var start = DateTime.Now;
 				var migrator = MigratorFactory.Create(a);
 				migrator.Run();

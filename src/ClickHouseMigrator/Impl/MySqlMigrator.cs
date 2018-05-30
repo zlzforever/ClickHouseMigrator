@@ -19,16 +19,16 @@ namespace ClickHouseMigrator.Impl
 		protected override List<Column> GetColumns(IDbConnection conn, string database, string table)
 		{
 			return _columns ?? (_columns = conn.Query($"show columns from `{database}`.`{table}`;")
-				       .Select(c =>
-				       {
-					       var dic = (IDictionary<string, dynamic>) c;
-					       return new Column
-					       {
-						       DataType = dic["Type"],
-						       IsPrimary = dic["Key"] == "PRI",
-						       Name = dic["Field"]
-					       };
-				       }).ToList());
+				.Select(c =>
+				{
+					var dic = (IDictionary<string, dynamic>)c;
+					return new Column
+					{
+						DataType = dic["Type"],
+						IsPrimary = dic["Key"] == "PRI",
+						Name = dic["Field"]
+					};
+				}).ToList());
 		}
 
 		protected override string ConvertToClickHouserDataType(string type)
@@ -38,41 +38,54 @@ namespace ClickHouseMigrator.Impl
 			switch (normalTypeName)
 			{
 				case "timestamp":
-				{
-					return "DateTime";
-				}
+					{
+						return "DateTime";
+					}
 				case "date":
-				{
-					return "Date";
-				}
+					{
+						return "Date";
+					}
 				case "tinyint":
 				case "int":
-				{
-					return "Int32";
-				}
+					{
+						return "Int32";
+					}
 				case "float":
-				{
-					return "Float32";
-				}
+					{
+						return "Float32";
+					}
 				case "double":
-				{
-					return "Float64";
-				}
+					{
+						return "Float64";
+					}
 				case "bigint":
-				{
-					return "Int64";
-				}
+					{
+						return "Int64";
+					}
 				default:
-				{
-					return "String";
-				}
+					{
+						return "String";
+					}
 			}
 		}
 
 		protected override IDbConnection CreateDbConnection(string host, int port, string user, string pass, string database)
 		{
+			if (string.IsNullOrWhiteSpace(user))
+			{
+				user = "root";
+			}
+			if (port <= 0)
+			{
+				port = 3306;
+			}
+			if (string.IsNullOrWhiteSpace(database))
+			{
+				database = "mysql";
+			}
+			var passwordPart = string.IsNullOrWhiteSpace(pass) ? "" : $"Password={pass}";
 			var connectString =
-				$"Database='mysql';Data Source={host};User ID={user};Password={pass};Port={port};SslMode=None;Connection Timeout=120";
+				$"Database='{database}';Data Source={host};User ID={user};{passwordPart};Port={port};SslMode=None;Connection Timeout=120";
 			var conn = new MySqlConnection(connectString);
 			return conn;
 		}
@@ -150,7 +163,7 @@ namespace ClickHouseMigrator.Impl
 			bool ignoreCase)
 		{
 			return string.Join(", ", columns.Select(c => ignoreCase ? c.Name.ToLowerInvariant() : c.Name)) +
-			       $", {migrateDateColumnName}";
+				   $", {migrateDateColumnName}";
 		}
 	}
 }

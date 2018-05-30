@@ -41,6 +41,8 @@ Use to migrate data from RDBMS to ClickHouse. Create database and table auto.
 					--targettb sku_sold
 					--drop true
 
+![DESIGN](https://github.com/zlzforever/ClickHouseMigrator/raw/master/images/example.png)
+
 ### Buy me a coffe
 
 ![](https://github.com/zlzforever/DotnetSpiderPictures/raw/master/pay.png)

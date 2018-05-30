@@ -55,7 +55,7 @@ namespace ClickHouseMigrator.Impl
 
 		protected abstract IDbConnection CreateDbConnection(string host, int port, string user, string pass, string database);
 
-		protected abstract List<Column> GetColumns(IDbConnection conn, string database, string table);
+		protected abstract List<Column> GetColumns(string host, int port, string user, string pass, string database, string table);
 
 		protected abstract string GenerateTableSql(string database, string table);
 
@@ -89,12 +89,9 @@ namespace ClickHouseMigrator.Impl
 
 			_selectColumnsSql = GenerateSelectColumnsSql(GetColumns());
 
-			var insertColumnsSql = GenerateInsertColumnsSql(GetColumns(), _arguments.MigrateDateColumnName, _arguments.IgnoreCase);
-
+			var insertColumnsSql = string.Join(", ", GetColumns().Select(c => $"{(_arguments.IgnoreCase ? c.Name.ToLowerInvariant() : c.Name)}")) + $", {_arguments.MigrateDateColumnName}";
 			_insertClickHouseSql = $"INSERT INTO {_arguments.GetTargetTable()} ({insertColumnsSql}) VALUES @bulk;";
 		}
-
-		protected abstract string GenerateInsertColumnsSql(List<Column> columns, string migrateDateColumnName, bool ignoreCase);
 
 		private void Migrate()
 		{
@@ -224,7 +221,7 @@ namespace ClickHouseMigrator.Impl
 							TracePerformance(watch, () => InsertDataToClickHouse(clickHouseConn, rows), "Insert data to clickhouse cost: {0} ms.");
 							rows.Clear();
 
-							if (count % 10000 == 0)
+							if (count % _arguments.Batch == 0)
 							{
 								var costTime = progressWatch.ElapsedMilliseconds / 1000;
 								if (costTime > 0)
@@ -247,10 +244,7 @@ namespace ClickHouseMigrator.Impl
 
 		private List<Column> GetColumns()
 		{
-			using (var conn = CreateDbConnection(_arguments.SourceHost, _arguments.SourcePort, _arguments.SourceUser, _arguments.SourcePassword, _arguments.SourceDatabase))
-			{
-				return GetColumns(conn, _arguments.SourceDatabase, _arguments.SourceTable);
-			}
+			return GetColumns(_arguments.SourceHost, _arguments.SourcePort, _arguments.SourceUser, _arguments.SourcePassword, _arguments.SourceDatabase, _arguments.SourceTable);
 		}
 
 		private T TracePerformance<T>(Stopwatch watch, Func<T> func, string message)
@@ -324,7 +318,7 @@ namespace ClickHouseMigrator.Impl
 			foreach (var column in GetColumns())
 			{
 				var clickhouseDataType = ConvertToClickHouserDataType(column.DataType);
-				stringBuilder.Append($"{column.Name} {clickhouseDataType}, ");
+				stringBuilder.Append($"{(_arguments.IgnoreCase ? column.Name.ToLowerInvariant() : column.Name)} {clickhouseDataType}, ");
 			}
 
 			stringBuilder.Append($"{_arguments.MigrateDateColumnName} Date");

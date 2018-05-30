@@ -20,32 +20,45 @@ namespace ClickHouseMigrator
 				switch (dbtype)
 				{
 					case "INT":
+						{
+							value = reader.IsDBNull(i) ? 0 : Convert.ToInt32(value);
+							break;
+						}
 					case "TINYINT":
+						{
+							value = reader.IsDBNull(i) ? Convert.ToByte(0) : Convert.ToByte(value);
+							break;
+						}
 					case "BOOL":
 						{
-							value = reader.IsDBNull(i) ? -1 : Convert.ToInt32(value);
+							value = reader.IsDBNull(i) ? Convert.ToByte(0) : Convert.ToByte(value);
+							break;
+						}
+					case "SMALLINT":
+						{
+							value = reader.IsDBNull(i) ? Convert.ToInt16(0) : Convert.ToInt16(value);
 							break;
 						}
 					case "BIGINT":
 						{
-							value = reader.IsDBNull(i) ? 0 : Convert.ToInt64(value);
+							value = reader.IsDBNull(i) ? 0L : Convert.ToInt64(value);
 							break;
 						}
 					case "FLOAT":
 						{
-							value = reader.IsDBNull(i) ? Single.NaN : Convert.ToSingle(value);
+							value = reader.IsDBNull(i) ? 0F : Convert.ToSingle(value);
 							break;
 						}
 					case "DOUBLE":
 						{
-							value = reader.IsDBNull(i) ? 0 : Convert.ToDouble(value);
+							value = reader.IsDBNull(i) ? 0.0 : Convert.ToDouble(value);
 							break;
 						}
 					case "TIMESTAMP":
 					case "DATE":
 					case "DATETIME":
 						{
-							value = reader.IsDBNull(i) ? new DateTime(1970, 1, 1, 0, 0, 0) : Convert.ToDateTime(value);
+							value = reader.IsDBNull(i) ? new DateTime() : Convert.ToDateTime(value);
 							break;
 						}
 					default:

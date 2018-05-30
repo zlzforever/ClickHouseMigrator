@@ -16,19 +16,26 @@ namespace ClickHouseMigrator.Impl
 		{
 		}
 
-		protected override List<Column> GetColumns(IDbConnection conn, string database, string table)
+		protected override List<Column> GetColumns(string host, int port, string user, string pass, string database, string table)
 		{
-			return _columns ?? (_columns = conn.Query($"show columns from `{database}`.`{table}`;")
-				.Select(c =>
+			if (_columns == null)
+			{
+				using (var conn = CreateDbConnection(host, port, user, pass, database))
 				{
-					var dic = (IDictionary<string, dynamic>)c;
-					return new Column
-					{
-						DataType = dic["Type"],
-						IsPrimary = dic["Key"] == "PRI",
-						Name = dic["Field"]
-					};
-				}).ToList());
+					_columns = conn.Query($"show columns from `{database}`.`{table}`;")
+						.Select(c =>
+						{
+							var dic = (IDictionary<string, dynamic>)c;
+							return new Column
+							{
+								DataType = dic["Type"],
+								IsPrimary = dic["Key"] == "PRI",
+								Name = dic["Field"]
+							};
+						}).ToList();
+				}
+			}
+			return _columns;
 		}
 
 		protected override string ConvertToClickHouserDataType(string type)
@@ -46,6 +53,13 @@ namespace ClickHouseMigrator.Impl
 						return "Date";
 					}
 				case "tinyint":
+					{
+						return "UInt8";
+					}
+				case "smallint":
+					{
+						return "Int16";
+					}
 				case "int":
 					{
 						return "Int32";
@@ -157,13 +171,6 @@ namespace ClickHouseMigrator.Impl
 		protected override string GenerateSelectColumnsSql(List<Column> columns)
 		{
 			return string.Join(',', columns.Select(c => $"`{c.Name}`"));
-		}
-
-		protected override string GenerateInsertColumnsSql(List<Column> columns, string migrateDateColumnName,
-			bool ignoreCase)
-		{
-			return string.Join(", ", columns.Select(c => ignoreCase ? c.Name.ToLowerInvariant() : c.Name)) +
-				   $", {migrateDateColumnName}";
 		}
 	}
 }

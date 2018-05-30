@@ -48,6 +48,11 @@ namespace ClickHouseMigrator
 				{
 					a.SourceHost = "127.0.0.1";
 				}
+				if (a.Batch < 1000)
+				{
+					a.Batch = 1000;
+					Log.Logger.Warning("Batch should not less than 1000.");
+				}
 				var start = DateTime.Now;
 				var migrator = MigratorFactory.Create(a);
 				migrator.Run();

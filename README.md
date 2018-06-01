@@ -1,16 +1,16 @@
 # ClickHouseMigrator
 
-Use to migrate data from RDBMS to ClickHouse. Create database and table auto.
+Use to migrate data from RDBMS to ClickHouse, create database and table auto.
 
 ### DEVELOP ENVIROMENT
 
 - Visual Studio 2017(15.3 or later)
 - [.NET Core 2.1 or later](https://www.microsoft.com/net/download/windows)
 
-### BASE USAGE
+### OPTIONS
 
-+ --source:  which RDBMS you want to migrate, right now i implement mysql migrator, for example: mysql
-+ --shost： host of RDBMS, for example: 192.168.90.100
++ --source: which RDBMS you want to migrate, right now i implement mysql migrator, for example: mysql
++ --shost： host of RDBMS, for example: 192.168.90.100, **default value: 127.0.0.1**
 + --sport: port of RDBMS, for example: 3306
 + --suser: user of RDBMS
 + --spass: password of RDBMS
@@ -31,18 +31,24 @@ Use to migrate data from RDBMS to ClickHouse. Create database and table auto.
 + -m or --mode: migrate mode, parallel or sequential, when use sequential thread argument are useless, **default value: parallel**
 + --log: whether write file log, **default value: false**
 
-         # ClickHouseMigrator -s mysql
-					--shost 192.168.90.100 --suser user --spass xxxxxxxx --sport 53306
-					-h 192.168.90.101 -u default -p UjzBOxCL
-					--thread 4 -b 1000
-					--sourcedb jd
-					--sourcetb sku_sold_2018_05_21
-					--targetdb jd
-					--targettb sku_sold
-					--drop true
+### HOW TO USE
+
+- install dotnet core 2.1 follow: https://www.microsoft.com/net/learn/get-started/windows#install
+- on windows run below command in command prompt, and in terminal for linux
+
+        dotnet tool install ClickHouseMigrator
+
+- the migrate tool named chm, so run tool like below
+
+      > chm --shost 192.168.90.100 --suser user --spass xxxxxxxx --sport 53306
+				--sourcedb jd --sourcetb sku_sold_2018_05_21
+				-h 192.168.90.101 -u default -p UjzBOxCL
+				--targetdb jd --targettb sku_sold
+				--thread 4 -b 1000
+				--drop true --log true -m parallel
 
 
-### RUN
+### SHOW
 
 * 32  Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz
 * 128 G

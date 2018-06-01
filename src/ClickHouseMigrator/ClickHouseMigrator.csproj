@@ -2,6 +2,20 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>zlzforever@163.com</Authors>
+    <AssemblyName>chm</AssemblyName>
+    <PackageId>ClickHouseMigrator</PackageId>
+    <Company />
+    <Product>ClickHouseMigrator</Product>
+    <Description>Migrate data from RDBMS to ClickHouse, create database and table auto.</Description>
+    <PackageProjectUrl>https://github.com/zlzforever/ClickHouseMigrator</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/zlzforever/ClickHouseMigrator/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/zlzforever/ClickHouseMigrator</RepositoryUrl>
+    <PackageTags>clickhouse; dotnetcore;</PackageTags>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <PackAsTool>true</PackAsTool>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ClickHouse.Ado" Version="1.1.6" />

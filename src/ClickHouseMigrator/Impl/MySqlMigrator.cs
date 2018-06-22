@@ -12,7 +12,7 @@ namespace ClickHouseMigrator.Impl
 	{
 		private List<Column> _columns;
 
-		public MySqlMigrator(Arguments arguments) : base(arguments)
+		public MySqlMigrator(Options options) : base(options)
 		{
 		}
 

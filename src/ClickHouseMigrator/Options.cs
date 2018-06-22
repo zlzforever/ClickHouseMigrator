@@ -1,9 +1,10 @@
 ﻿using CommandLine;
 using System;
+using System.Collections.Generic;
 
 namespace ClickHouseMigrator
 {
-	public class Arguments
+	public class Options
 	{
 		[Option('s', "source", Required = false, HelpText = "Source database.")]
 		public string Source { get; set; } = "mysql";
@@ -56,9 +57,6 @@ namespace ClickHouseMigrator
 		[Option("thread", Required = false, HelpText = "Thread count.")]
 		public int Thread { get; set; } = Environment.ProcessorCount;
 
-		[Option("mdate", Required = false, HelpText = "The name of migrate date.")]
-		public string MigrateDateColumnName { get; set; } = "migrate_date";
-
 		[Option("performance", Required = false, HelpText = "Record performance.")]
 		public bool TracePerformance { get; set; } = false;
 
@@ -67,6 +65,9 @@ namespace ClickHouseMigrator
 
 		[Option("log", Required = false, HelpText = "Write file log.")]
 		public bool Log { get; set; } = false;
+
+		[Option("orderby", Required = false, HelpText = "Order by for clickhouse.", Separator = ',')]
+		public IEnumerable<string> OrderBy { get; set; }
 
 		public string GetTargetDatabase()
 		{

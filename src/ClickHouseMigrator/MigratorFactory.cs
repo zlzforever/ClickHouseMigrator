@@ -5,7 +5,7 @@ namespace ClickHouseMigrator
 {
 	public static class MigratorFactory
 	{
-		public static IMigrator Create(Arguments arguments)
+		public static IMigrator Create(Options arguments)
 		{
 			var source = arguments.Source.ToLower();
 			switch (source)

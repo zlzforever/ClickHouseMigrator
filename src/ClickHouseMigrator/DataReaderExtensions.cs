@@ -9,9 +9,7 @@ namespace ClickHouseMigrator
 
 		public static dynamic[] ToArray(this IDataReader reader)
 		{
-			dynamic[] result = new dynamic[reader.FieldCount + 1];
-			result[reader.FieldCount] = Today;
-
+			dynamic[] result = new dynamic[reader.FieldCount];
 			for (int i = 0; i < reader.FieldCount; ++i)
 			{
 				var value = reader.GetValue(i);

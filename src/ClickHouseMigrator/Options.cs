@@ -27,10 +27,10 @@ namespace ClickHouseMigrator
 		[Option("port", Required = false, HelpText = "Clickhouse port.")]
 		public int Port { get; set; } = 9000;
 
-		[Option('u', "user", Required = true, HelpText = "Clickhouse user.")]
+		[Option('u', "user", Required = false, HelpText = "Clickhouse user.")]
 		public string User { get; set; } = "default";
 
-		[Option('p', "password", Required = true, HelpText = "Clickhouse password.")]
+		[Option('p', "password", Required = false, HelpText = "Clickhouse password.")]
 		public string Password { get; set; }
 
 		[Option("sourcedb", Required = true, HelpText = "Source database to migrate.")]

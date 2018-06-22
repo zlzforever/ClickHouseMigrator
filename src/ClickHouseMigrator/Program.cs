@@ -21,6 +21,7 @@ namespace ClickHouseMigrator
 				}
 
 				Log.Logger = loggerConfiguration.CreateLogger();
+				Log.Logger.Information($"Options: {string.Join(" ", args)}");
 				var mode = a.Mode.ToLower();
 				if (mode != "parallel" && mode != "sequential")
 				{
@@ -46,6 +47,10 @@ namespace ClickHouseMigrator
 				if (string.IsNullOrWhiteSpace(a.SourceHost))
 				{
 					a.SourceHost = "127.0.0.1";
+				}
+				if (string.IsNullOrWhiteSpace(a.User))
+				{
+					a.User = "default";
 				}
 				if (a.Batch < 1000)
 				{

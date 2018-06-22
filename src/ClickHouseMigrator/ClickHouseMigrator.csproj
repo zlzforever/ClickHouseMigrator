@@ -13,10 +13,10 @@
     <PackageLicenseUrl>https://github.com/zlzforever/ClickHouseMigrator/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/zlzforever/ClickHouseMigrator</RepositoryUrl>
     <PackageTags>clickhouse; dotnetcore;</PackageTags>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <FileVersion>1.0.3.0</FileVersion>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <FileVersion>1.0.4.0</FileVersion>
     <PackAsTool>true</PackAsTool>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ClickHouse.Ado" Version="1.1.6" />

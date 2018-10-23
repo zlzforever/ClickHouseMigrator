@@ -317,6 +317,7 @@ namespace ClickHouseMigrator.Impl
 						ParameterName = "bulk",
 						Value = list
 					});
+					//Console.WriteLine(_insertClickHouseSql);
 					command.ExecuteNonQuery();
 				}
 			});

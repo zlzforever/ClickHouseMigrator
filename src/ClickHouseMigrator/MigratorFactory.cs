@@ -15,8 +15,7 @@ namespace ClickHouseMigrator
 						return new MySqlMigrator(arguments);
 					}
 				case "mssql":
-					{
-						Console.WriteLine("MSSQL!!!!!!!!!!!!!!!!!!!!!!!!");
+					{						
 						return new MsSqlMigrator(arguments);
 					}
 				default:

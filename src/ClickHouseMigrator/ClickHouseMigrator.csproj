@@ -19,11 +19,10 @@
     <Version>1.0.4</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ClickHouse.Ado" Version="1.1.6" />
-    <PackageReference Include="CommandLineParser" Version="2.2.1" />
+    <PackageReference Include="ClickHouse.Ado" Version="1.1.9" />
+    <PackageReference Include="CommandLineParser" Version="2.3.0" />
     <PackageReference Include="Dapper" Version="1.50.5" />
-    <PackageReference Include="MySqlConnector" Version="0.40.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="MySqlConnector" Version="0.46.1" />
     <PackageReference Include="Polly" Version="6.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 using CommandLine;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -10,6 +12,7 @@ namespace ClickHouseMigrator
 	{
 		static void Main(string[] args)
 		{
+			
 			Parser.Default.ParseArguments<Options>(args).WithParsed(a =>
 			{
 				var loggerConfiguration = new LoggerConfiguration()

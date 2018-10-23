@@ -13,52 +13,54 @@ namespace ClickHouseMigrator
 			for (int i = 0; i < reader.FieldCount; ++i)
 			{
 				var value = reader.GetValue(i);
-				var dbtype = reader.GetDataTypeName(i);
-
-				switch (dbtype)
+				var dbtype = reader.GetDataTypeName(i);				
+				switch (dbtype.ToLowerInvariant())
 				{
-					case "INT":
+					case "int":					
 						{
 							value = reader.IsDBNull(i) ? 0 : Convert.ToInt32(value);
 							break;
 						}
-					case "TINYINT":
+					case "tinyint":
 						{
 							value = reader.IsDBNull(i) ? Convert.ToByte(0) : Convert.ToByte(value);
 							break;
 						}
-					case "BOOL":
+					case "bool":
 						{
 							value = reader.IsDBNull(i) ? Convert.ToByte(0) : Convert.ToByte(value);
 							break;
 						}
-					case "SMALLINT":
+					case "smallint":
 						{
 							value = reader.IsDBNull(i) ? Convert.ToInt16(0) : Convert.ToInt16(value);
 							break;
 						}
-					case "BIGINT":
+					case "bigint":
 						{
 							value = reader.IsDBNull(i) ? 0L : Convert.ToInt64(value);
 							break;
 						}
-					case "FLOAT":
+					case "float":
 						{
 							value = reader.IsDBNull(i) ? 0F : Convert.ToSingle(value);
 							break;
 						}
-					case "DOUBLE":
+					case "double":
+					case "decimal":					
 						{
 							value = reader.IsDBNull(i) ? 0.0 : Convert.ToDouble(value);
 							break;
 						}
-					case "TIMESTAMP":
-					case "DATE":
-					case "DATETIME":
+					case "timestamp":
+					case "date":
+					case "datetime":
+					case "datetime2":
 						{
 							value = reader.IsDBNull(i) ? new DateTime() : Convert.ToDateTime(value);
 							break;
 						}
+					case "nvarchar":
 					default:
 						{
 							value = reader.IsDBNull(i) ? string.Empty : Convert.ToString(value);

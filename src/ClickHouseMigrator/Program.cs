@@ -60,6 +60,13 @@ namespace ClickHouseMigrator
 					a.Batch = 1000;
 					Log.Logger.Warning("Batch should not less than 1000.");
 				}
+				//preventing SQL Exception about "The server supports a maximum of 2000 parameters"
+				if (a.Source == "mssql" && a.Batch > 2000)
+				{
+					a.Batch = 2000;
+					Log.Logger.Warning("Unfortunally on MsSQL server Batch size  should not greater than 2000.");
+
+				}
 				var start = DateTime.Now;
 				var migrator = MigratorFactory.Create(a);
 				migrator.Run();

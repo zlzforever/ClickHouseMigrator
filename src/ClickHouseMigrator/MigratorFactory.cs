@@ -14,6 +14,10 @@ namespace ClickHouseMigrator
 					{
 						return new MySqlMigrator(arguments);
 					}
+				case "mssql":
+					{						
+						return new MsSqlMigrator(arguments);
+					}
 				default:
 					{
 						throw new NotImplementedException($"Not impemented {source} migrator.");

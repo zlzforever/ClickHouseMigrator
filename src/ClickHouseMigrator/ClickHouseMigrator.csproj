@@ -10,20 +10,20 @@
     <Product>ClickHouseMigrator</Product>
     <Description>Migrate data from RDBMS to ClickHouse</Description>
     <PackageProjectUrl>https://github.com/zlzforever/ClickHouseMigrator</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/zlzforever/ClickHouseMigrator/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/zlzforever/ClickHouseMigrator</RepositoryUrl>
     <PackageTags>clickhouse; dotnetcore;</PackageTags>
-    <AssemblyVersion>1.0.4.0</AssemblyVersion>
-    <FileVersion>1.0.4.0</FileVersion>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <FileVersion>1.0.6.0</FileVersion>
     <PackAsTool>true</PackAsTool>
-    <Version>1.0.4</Version>
+    <Version>1.0.6</Version>
+    <license>license</license>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ClickHouse.Ado" Version="1.1.9" />
-    <PackageReference Include="CommandLineParser" Version="2.3.0" />
-    <PackageReference Include="Dapper" Version="1.50.5" />
-    <PackageReference Include="MySqlConnector" Version="0.46.1" />
-    <PackageReference Include="Polly" Version="6.1.0" />
+    <PackageReference Include="ClickHouse.Ado" Version="1.1.13" />
+    <PackageReference Include="CommandLineParser" Version="2.4.3" />
+    <PackageReference Include="Dapper" Version="1.60.1" />
+    <PackageReference Include="MySqlConnector" Version="0.49.3" />
+    <PackageReference Include="Polly" Version="7.0.3" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />

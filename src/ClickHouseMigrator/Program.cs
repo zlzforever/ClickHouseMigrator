@@ -12,6 +12,9 @@ namespace ClickHouseMigrator
 	{
 		static void Main(string[] args)
 		{
+			args =
+				"--source sqlserver --shost localhost --suser sa --spass 1qazZAQ! --sport 1433 --sourcedb test --sourcetb ch -h localhost --targetdb test --targettb ch --thread 1 -b 2000 --drop true --log true"
+					.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
 			
 			Parser.Default.ParseArguments<Options>(args).WithParsed(a =>
 			{

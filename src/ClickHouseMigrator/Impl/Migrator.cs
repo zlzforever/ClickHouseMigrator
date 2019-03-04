@@ -16,10 +16,9 @@ namespace ClickHouseMigrator.Impl
 {
 	public abstract class Migrator : IMigrator
 	{
-		private static readonly RetryPolicy RetryPolicy = Policy.Handle<Exception>().Retry(5, (ex, count) =>
-		{
-			Log.Logger.Error($"Insert data to clickhouse failed [{count}]: {ex}");
-		});
+		private static readonly RetryPolicy RetryPolicy = Policy.Handle<Exception>().Retry(5,
+			(ex, count) => { Log.Logger.Error($"Insert data to clickhouse failed [{count}]: {ex}"); });
+
 		private static int _batch;
 		private static int _counter;
 		private readonly Options _options;
@@ -37,7 +36,8 @@ namespace ClickHouseMigrator.Impl
 
 		protected virtual ClickHouseConnection CreateClickHouseConnection(string database = null)
 		{
-			string connectStr = $"Compress=True;CheckCompressedHash=False;Compressor=lz4;Host={_options.Host};Port={_options.Port};Database=system;User={_options.User};Password={_options.Password}";
+			string connectStr =
+				$"Compress=True;CheckCompressedHash=False;Compressor=lz4;Host={_options.Host};Port={_options.Port};Database=system;User={_options.User};Password={_options.Password}";
 			var settings = new ClickHouseConnectionSettings(connectStr);
 			var cnn = new ClickHouseConnection(settings);
 			cnn.Open();
@@ -46,16 +46,20 @@ namespace ClickHouseMigrator.Impl
 			{
 				cnn.Execute($"USE {database};");
 			}
+
 			return cnn;
 		}
 
-		protected abstract Tuple<IDbCommand, int> GenerateBatchQueryCommand(IDbConnection conn, List<Column> primaryKeys, string selectColumnsSql, string tableSql, int batch, int batchCount);
+		protected abstract Tuple<IDbCommand, int> GenerateBatchQueryCommand(IDbConnection conn,
+			List<Column> primaryKeys, string selectColumnsSql, string tableSql, int batch, int batchCount);
 
 		protected abstract string GenerateQueryAllSql(string selectColumnsSql, string tableSql);
 
-		protected abstract IDbConnection CreateDbConnection(string host, int port, string user, string pass, string database);
+		protected abstract IDbConnection CreateDbConnection(string host, int port, string user, string pass,
+			string database);
 
-		protected abstract List<Column> GetColumns(string host, int port, string user, string pass, string database, string table);
+		protected abstract List<Column> GetColumns(string host, int port, string user, string pass, string database,
+			string table);
 
 		protected abstract string GenerateTableSql(string database, string table);
 
@@ -114,7 +118,8 @@ namespace ClickHouseMigrator.Impl
 
 			_selectColumnsSql = GenerateSelectColumnsSql(columns);
 
-			var insertColumnsSql = string.Join(", ", columns.Select(c => $"{(_options.IgnoreCase ? c.Name.ToLowerInvariant() : c.Name)}"));
+			var insertColumnsSql = string.Join(", ",
+				columns.Select(c => $"{(_options.IgnoreCase ? c.Name.ToLowerInvariant() : c.Name)}"));
 			_insertClickHouseSql = $"INSERT INTO {_options.GetTargetTable()} ({insertColumnsSql}) VALUES @bulk;";
 
 			return true;
@@ -138,13 +143,12 @@ namespace ClickHouseMigrator.Impl
 		{
 			using (var clickHouseConn = CreateClickHouseConnection(_options.GetTargetDatabase()))
 			{
-				var command = clickHouseConn.CreateCommand($"SELECT COUNT(*) FROM {_options.GetTargetDatabase()}.{_options.GetTargetTable()}");
+				var command =
+					clickHouseConn.CreateCommand(
+						$"SELECT COUNT(*) FROM {_options.GetTargetDatabase()}.{_options.GetTargetTable()}");
 				using (var reader = command.ExecuteReader())
 				{
-					reader.ReadAll(x =>
-					{
-						Log.Logger.Verbose($"Migrate {x.GetValue(0)} rows.");
-					});
+					reader.ReadAll(x => { Log.Logger.Verbose($"Migrate {x.GetValue(0)} rows."); });
 				}
 			}
 		}
@@ -154,7 +158,8 @@ namespace ClickHouseMigrator.Impl
 			Stopwatch progressWatch = new Stopwatch();
 			progressWatch.Start();
 			using (var clickHouseConn = CreateClickHouseConnection(_options.GetTargetDatabase()))
-			using (var conn = CreateDbConnection(_options.SourceHost, _options.SourcePort, _options.SourceUser, _options.SourcePassword, _options.SourceDatabase))
+			using (var conn = CreateDbConnection(_options.SourceHost, _options.SourcePort, _options.SourceUser,
+				_options.SourcePassword, _options.SourceDatabase))
 			{
 				if (conn.State != ConnectionState.Open)
 				{
@@ -182,7 +187,8 @@ namespace ClickHouseMigrator.Impl
 								Log.Logger.Debug($"Read and convert data cost: {watch.ElapsedMilliseconds} ms.");
 							}
 
-							TracePerformance(watch, () => InsertDataToClickHouse(clickHouseConn, list), "Insert data to clickhouse cost: {0} ms.");
+							TracePerformance(watch, () => InsertDataToClickHouse(clickHouseConn, list),
+								"Insert data to clickhouse cost: {0} ms.");
 							list.Clear();
 							var costTime = progressWatch.ElapsedMilliseconds / 1000;
 							if (costTime > 0)
@@ -193,13 +199,16 @@ namespace ClickHouseMigrator.Impl
 							watch.Restart();
 						}
 					}
+
 					if (list.Count > 0)
 					{
 						InsertDataToClickHouse(clickHouseConn, list);
 					}
+
 					list.Clear();
 				}
 			}
+
 			var finalCostTime = progressWatch.ElapsedMilliseconds / 1000;
 			Log.Logger.Verbose($"Total: {_counter}, Speed: {_counter / finalCostTime} Row/Sec.");
 		}
@@ -209,10 +218,11 @@ namespace ClickHouseMigrator.Impl
 			Stopwatch progressWatch = new Stopwatch();
 			progressWatch.Start();
 
-			Parallel.For(0, _options.Thread, new ParallelOptions { MaxDegreeOfParallelism = _options.Thread }, (i) =>
+			Parallel.For(0, _options.Thread, new ParallelOptions {MaxDegreeOfParallelism = _options.Thread}, (i) =>
 			{
 				using (var clickHouseConn = CreateClickHouseConnection(_options.GetTargetDatabase()))
-				using (var conn = CreateDbConnection(_options.SourceHost, _options.SourcePort, _options.SourceUser, _options.SourcePassword, _options.SourceDatabase))
+				using (var conn = CreateDbConnection(_options.SourceHost, _options.SourcePort, _options.SourceUser,
+					_options.SourcePassword, _options.SourceDatabase))
 				{
 					if (conn.State != ConnectionState.Open)
 					{
@@ -225,13 +235,17 @@ namespace ClickHouseMigrator.Impl
 					{
 						Interlocked.Increment(ref _batch);
 
-						var command = TracePerformance(watch, () => GenerateBatchQueryCommand(conn, _primaryKeys, _selectColumnsSql, _tableSql, _batch, _options.Batch), "Construct query data command cost: {0} ms.");
+						var command = TracePerformance(watch,
+							() => GenerateBatchQueryCommand(conn, _primaryKeys, _selectColumnsSql, _tableSql, _batch,
+								_options.Batch), "Construct query data command cost: {0} ms.");
 						if (command.Item2 == 0)
 						{
 							Log.Logger.Information($"Thread {i} exit.");
 							break;
 						}
-						using (var reader = TracePerformance(watch, () => command.Item1.ExecuteReader(), "Query data from source database cost: {0} ms."))
+
+						using (var reader = TracePerformance(watch, () => command.Item1.ExecuteReader(),
+							"Query data from source database cost: {0} ms."))
 						{
 							int count = 0;
 							var rows = TracePerformance(watch, () =>
@@ -243,9 +257,11 @@ namespace ClickHouseMigrator.Impl
 									list.Add(reader.ToArray());
 									count = Interlocked.Increment(ref _counter);
 								}
+
 								return list;
 							}, "Read and convert data cost: {0} ms.");
-							TracePerformance(watch, () => InsertDataToClickHouse(clickHouseConn, rows), "Insert data to clickhouse cost: {0} ms.");
+							TracePerformance(watch, () => InsertDataToClickHouse(clickHouseConn, rows),
+								"Insert data to clickhouse cost: {0} ms.");
 							rows.Clear();
 
 							if (count % _options.Batch == 0)
@@ -257,6 +273,7 @@ namespace ClickHouseMigrator.Impl
 								}
 							}
 						}
+
 						if (command.Item2 < _options.Batch)
 						{
 							Log.Logger.Information($"Thread {i} exit.");
@@ -266,12 +283,14 @@ namespace ClickHouseMigrator.Impl
 				}
 			});
 			var finalCostTime = progressWatch.ElapsedMilliseconds / 1000;
-			Log.Logger.Verbose($"Total: {_counter}, Speed: {_counter / finalCostTime} Row/Sec.");
+			Log.Logger.Verbose(
+				$"Total: {_counter}, Speed: {(finalCostTime == 0 ? 0 : (_counter / finalCostTime))} Row/Sec.");
 		}
 
 		private List<Column> GetColumns()
 		{
-			return GetColumns(_options.SourceHost, _options.SourcePort, _options.SourceUser, _options.SourcePassword, _options.SourceDatabase, _options.SourceTable);
+			return GetColumns(_options.SourceHost, _options.SourcePort, _options.SourceUser, _options.SourcePassword,
+				_options.SourceDatabase, _options.SourceTable);
 		}
 
 		private T TracePerformance<T>(Stopwatch watch, Func<T> func, string message)
@@ -280,6 +299,7 @@ namespace ClickHouseMigrator.Impl
 			{
 				return func();
 			}
+
 			watch.Restart();
 			var t = func();
 			watch.Stop();
@@ -307,6 +327,7 @@ namespace ClickHouseMigrator.Impl
 			{
 				return;
 			}
+
 			RetryPolicy.ExecuteAndCapture(() =>
 			{
 				using (var command = clickHouseConn.CreateCommand())
@@ -346,10 +367,14 @@ namespace ClickHouseMigrator.Impl
 			foreach (var column in GetColumns())
 			{
 				var clickhouseDataType = ConvertToClickHouserDataType(column.DataType);
-				stringBuilder.Append($"{(_options.IgnoreCase ? column.Name.ToLowerInvariant() : column.Name)} {clickhouseDataType}, ");
+				stringBuilder.Append(
+					$"{(_options.IgnoreCase ? column.Name.ToLowerInvariant() : column.Name)} {clickhouseDataType}, ");
 			}
+
 			stringBuilder.Remove(stringBuilder.Length - 2, 2);
-			var orderby = _options.OrderBy.Count() > 0 ? string.Join(", ", _options.OrderBy.Select(k => _options.IgnoreCase ? k.ToLowerInvariant() : k)) : string.Join(", ", _primaryKeys.Select(k => _options.IgnoreCase ? k.Name.ToLowerInvariant() : k.Name));
+			var orderby = _options.OrderBy.Count() > 0
+				? string.Join(", ", _options.OrderBy.Select(k => _options.IgnoreCase ? k.ToLowerInvariant() : k))
+				: string.Join(", ", _primaryKeys.Select(k => _options.IgnoreCase ? k.Name.ToLowerInvariant() : k.Name));
 
 			stringBuilder.Append($") ENGINE = MergeTree ORDER BY ({orderby}) SETTINGS index_granularity = 8192");
 

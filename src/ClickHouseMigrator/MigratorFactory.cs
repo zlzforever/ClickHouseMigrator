@@ -15,6 +15,7 @@ namespace ClickHouseMigrator
 						return new MySqlMigrator(arguments);
 					}
 				case "mssql":
+				case "sqlserver":
 					{						
 						return new MsSqlMigrator(arguments);
 					}

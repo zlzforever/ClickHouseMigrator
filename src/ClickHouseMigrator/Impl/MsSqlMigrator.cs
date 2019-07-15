@@ -49,7 +49,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 			return _columns;
 		}
 
-		protected override string ConvertToClickHouserDataType(string type)
+		protected override string ConvertToClickHouseDataType(string type)
 		{
 			var sizePrefixIndex = type.IndexOf('(');
 			var normalTypeName = sizePrefixIndex <= 0 ? type : type.Substring(0, sizePrefixIndex);
@@ -90,8 +90,6 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 					{
 						return "Int64";
 					}
-				case "varchar":
-				case "nvarchar":
 				default:
 					{
 						return "String";
@@ -111,7 +109,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 			}
 			if (string.IsNullOrWhiteSpace(database))
 			{
-				throw new ArgumentNullException("database");
+				throw new ArgumentNullException(nameof(database));
 			}
 			var passwordPart = string.IsNullOrWhiteSpace(pass) ? "" : $"Password={pass}";
 

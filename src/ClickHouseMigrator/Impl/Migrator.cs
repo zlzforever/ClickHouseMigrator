@@ -32,7 +32,7 @@ namespace ClickHouseMigrator.Impl
 			_options = options;
 		}
 
-		protected abstract string ConvertToClickHouserDataType(string type);
+		protected abstract string ConvertToClickHouseDataType(string type);
 
 		protected virtual ClickHouseConnection CreateClickHouseConnection(string database = null)
 		{
@@ -94,18 +94,18 @@ namespace ClickHouseMigrator.Impl
 				Log.Warning($"Table: {_options.SourceTable} contains no primary key, can't support parallel mode.");
 			}
 
-			if (_primaryKeys.Count == 0 && _options.OrderBy.Count() == 0)
+			if (_primaryKeys.Count == 0 && !_options.OrderBy.Any())
 			{
 				var msg = "Source table uncontains primary, and options uncontains order by.";
 				Log.Error(msg);
 				return false;
 			}
 
-			if (_options.OrderBy.Count() > 0)
+			if (_options.OrderBy.Any())
 			{
 				foreach (var column in _options.OrderBy)
 				{
-					if (!columns.Any(cl => cl.Name.ToLower() == column.ToLower()))
+					if (columns.All(cl => cl.Name.ToLower() != column.ToLower()))
 					{
 						var msg = $"Can't find order by column: {column} in source table.";
 						Log.Error(msg);
@@ -366,17 +366,17 @@ namespace ClickHouseMigrator.Impl
 
 			foreach (var column in GetColumns())
 			{
-				var clickhouseDataType = ConvertToClickHouserDataType(column.DataType);
+				var clickhouseDataType = ConvertToClickHouseDataType(column.DataType);
 				stringBuilder.Append(
 					$"{(_options.IgnoreCase ? column.Name.ToLowerInvariant() : column.Name)} {clickhouseDataType}, ");
 			}
 
 			stringBuilder.Remove(stringBuilder.Length - 2, 2);
-			var orderby = _options.OrderBy.Count() > 0
+			var orderBy = _options.OrderBy.Any()
 				? string.Join(", ", _options.OrderBy.Select(k => _options.IgnoreCase ? k.ToLowerInvariant() : k))
 				: string.Join(", ", _primaryKeys.Select(k => _options.IgnoreCase ? k.Name.ToLowerInvariant() : k.Name));
 
-			stringBuilder.Append($") ENGINE = MergeTree ORDER BY ({orderby}) SETTINGS index_granularity = 8192");
+			stringBuilder.Append($") ENGINE = MergeTree ORDER BY ({orderBy}) SETTINGS index_granularity = 8192");
 
 			var sql = stringBuilder.ToString();
 			return sql;

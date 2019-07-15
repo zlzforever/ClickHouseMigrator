@@ -33,19 +33,19 @@ Use to migrate data from RDBMS to ClickHouse, create database and table auto.
 
 ### HOW TO USE
 
-- install dotnet core 2.1 follow: https://www.microsoft.com/net/learn/get-started/windows#install
+- install dotnet core 2.2 follow: https://www.microsoft.com/net/learn/get-started/windows#install
 - on windows run below command in command prompt, and in terminal for linux
 
         dotnet tool install -g ClickHouseMigrator
 
 - the migrate tool named chm, so run tool like below
 
-      > chm --source sqlserver --shost 192.168.90.100 --suser user --spass xxxxxxxx --sport 53306 \
-      --sourcedb jd --sourcetb sku_sold_2018_05_21 \
-      -h 192.168.90.101 -u default -p UjzBOxCL \
-      --targetdb jd \
-      --targettb sku_sold \
-	  --thread 4 \
+      > chm --source sqlserver --shost localhost --suser sa --spass 1qazZAQ! --sport 1433 \
+      --sourcedb cnblogs --sourcetb cnblogs_entity_model \
+      -h localhost \
+      --targetdb cnblogs \
+      --targettb cnblogs_entity_model \
+	  --thread 1 \
 	  -b 2000 \
 	  --drop true \
 	  --log true \

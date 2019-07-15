@@ -21,7 +21,7 @@ namespace ClickHouseMigrator
 					}
 				default:
 					{
-						throw new NotImplementedException($"Not impemented {source} migrator.");
+						throw new NotImplementedException($"Not implemented {source} migrator.");
 					}
 			}
 		}

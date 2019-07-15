@@ -5,16 +5,14 @@ namespace ClickHouseMigrator
 {
 	public static class DataReaderExtensions
 	{
-		private static readonly DateTime Today = DateTime.Now.Date;
-
 		public static dynamic[] ToArray(this IDataReader reader)
 		{
 			dynamic[] result = new dynamic[reader.FieldCount];
 			for (int i = 0; i < reader.FieldCount; ++i)
 			{
 				var value = reader.GetValue(i);
-				var dbtype = reader.GetDataTypeName(i);				
-				switch (dbtype.ToLowerInvariant())
+				var dbType = reader.GetDataTypeName(i);				
+				switch (dbType.ToLowerInvariant())
 				{
 					case "int":					
 						{
@@ -60,7 +58,6 @@ namespace ClickHouseMigrator
 							value = reader.IsDBNull(i) ? new DateTime() : Convert.ToDateTime(value);
 							break;
 						}
-					case "nvarchar":
 					default:
 						{
 							value = reader.IsDBNull(i) ? string.Empty : Convert.ToString(value);

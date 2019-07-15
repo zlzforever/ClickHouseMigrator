@@ -38,7 +38,7 @@ namespace ClickHouseMigrator.Impl
 			return _columns;
 		}
 
-		protected override string ConvertToClickHouserDataType(string type)
+		protected override string ConvertToClickHouseDataType(string type)
 		{
 			var sizePrefixIndex = type.IndexOf('(');
 			var normalTypeName = sizePrefixIndex <= 0 ? type : type.Substring(0, sizePrefixIndex);

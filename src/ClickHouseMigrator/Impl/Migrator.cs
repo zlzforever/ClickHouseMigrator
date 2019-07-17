@@ -72,8 +72,6 @@ namespace ClickHouseMigrator.Impl
 				return;
 			}
 
-			Log.Logger.Verbose($"Thread: {_options.Thread}, Batch: {_options.Batch}.");
-
 			PrepareClickHouse();
 
 			Interlocked.Exchange(ref _batch, -1);
@@ -87,12 +85,6 @@ namespace ClickHouseMigrator.Impl
 			var columns = GetColumns();
 
 			_primaryKeys = columns.Where(c => c.IsPrimary).ToList();
-
-			if (_primaryKeys.Count == 0 && _options.Thread > 1)
-			{
-				_options.Thread = 1;
-				Log.Warning($"Table: {_options.SourceTable} contains no primary key, can't support parallel mode.");
-			}
 
 			if (_primaryKeys.Count == 0 && !_options.OrderBy.Any())
 			{
@@ -119,7 +111,7 @@ namespace ClickHouseMigrator.Impl
 			_selectColumnsSql = GenerateSelectColumnsSql(columns);
 
 			var insertColumnsSql = string.Join(", ",
-				columns.Select(c => $"{(_options.IgnoreCase ? c.Name.ToLowerInvariant() : c.Name)}"));
+				columns.Select(c => $"{(_options.Lowercase ? c.Name.ToLowerInvariant() : c.Name)}"));
 			_insertClickHouseSql = $"INSERT INTO {_options.GetTargetTable()} ({insertColumnsSql}) VALUES @bulk;";
 
 			return true;
@@ -182,7 +174,7 @@ namespace ClickHouseMigrator.Impl
 						{
 							watch.Stop();
 
-							if (_options.TracePerformance)
+							if (_options.Trace)
 							{
 								Log.Logger.Debug($"Read and convert data cost: {watch.ElapsedMilliseconds} ms.");
 							}
@@ -218,7 +210,15 @@ namespace ClickHouseMigrator.Impl
 			Stopwatch progressWatch = new Stopwatch();
 			progressWatch.Start();
 
-			Parallel.For(0, _options.Thread, new ParallelOptions {MaxDegreeOfParallelism = _options.Thread}, (i) =>
+			var thread = _options.Thread;
+			if (_primaryKeys.Count == 0 && _options.Thread > 1)
+			{
+				thread = 1;
+				Log.Warning($"Table: {_options.SourceTable} contains no primary key, can't support parallel mode.");
+			}
+
+			Log.Logger.Verbose($"Thread: {_options.Thread}, Batch: {_options.Batch}.");
+			Parallel.For(0, thread, new ParallelOptions {MaxDegreeOfParallelism = _options.Thread}, (i) =>
 			{
 				using (var clickHouseConn = CreateClickHouseConnection(_options.GetTargetDatabase()))
 				using (var conn = CreateDbConnection(_options.SourceHost, _options.SourcePort, _options.SourceUser,
@@ -295,7 +295,7 @@ namespace ClickHouseMigrator.Impl
 
 		private T TracePerformance<T>(Stopwatch watch, Func<T> func, string message)
 		{
-			if (!_options.TracePerformance || watch == null)
+			if (!_options.Trace || watch == null)
 			{
 				return func();
 			}
@@ -309,7 +309,7 @@ namespace ClickHouseMigrator.Impl
 
 		private void TracePerformance(Stopwatch watch, Action action, string message)
 		{
-			if (!_options.TracePerformance || watch == null)
+			if (!_options.Trace || watch == null)
 			{
 				action();
 				return;
@@ -368,13 +368,13 @@ namespace ClickHouseMigrator.Impl
 			{
 				var clickhouseDataType = ConvertToClickHouseDataType(column.DataType);
 				stringBuilder.Append(
-					$"{(_options.IgnoreCase ? column.Name.ToLowerInvariant() : column.Name)} {clickhouseDataType}, ");
+					$"{(_options.Lowercase ? column.Name.ToLowerInvariant() : column.Name)} {clickhouseDataType}, ");
 			}
 
 			stringBuilder.Remove(stringBuilder.Length - 2, 2);
 			var orderBy = _options.OrderBy.Any()
-				? string.Join(", ", _options.OrderBy.Select(k => _options.IgnoreCase ? k.ToLowerInvariant() : k))
-				: string.Join(", ", _primaryKeys.Select(k => _options.IgnoreCase ? k.Name.ToLowerInvariant() : k.Name));
+				? string.Join(", ", _options.OrderBy.Select(k => _options.Lowercase ? k.ToLowerInvariant() : k))
+				: string.Join(", ", _primaryKeys.Select(k => _options.Lowercase ? k.Name.ToLowerInvariant() : k.Name));
 
 			stringBuilder.Append($") ENGINE = MergeTree ORDER BY ({orderBy}) SETTINGS index_granularity = 8192");
 

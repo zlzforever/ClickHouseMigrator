@@ -7,7 +7,7 @@ namespace ClickHouseMigrator
 	{
 		public static IMigrator Create(Options arguments)
 		{
-			var source = arguments.Source.ToLower();
+			var source = arguments.DataSource.ToLower();
 			switch (source)
 			{
 				case "mysql":

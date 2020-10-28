@@ -4,36 +4,34 @@ using System.Data;
 using System.Text;
 using Dapper;
 using System.Linq;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace ClickHouseMigrator.Impl
 {
-	public class MySqlMigrator : Migrator
+	public class MySqlMigrator : RDBMSMigrator
 	{
-		private List<Column> _columns;
+		private List<ColumnDefine> _columns;
 
 		public MySqlMigrator(Options options) : base(options)
 		{
 		}
 
-		protected override List<Column> GetColumns(string host, int port, string user, string pass, string database, string table)
+		protected override List<ColumnDefine> GetColumns(string host, int port, string user, string pass, string database, string table)
 		{
 			if (_columns == null)
 			{
-				using (var conn = CreateDbConnection(host, port, user, pass, database))
-				{
-					_columns = conn.Query($"show columns from `{database}`.`{table}`;")
-						.Select(c =>
+				using var conn = CreateDbConnection(host, port, user, pass, database);
+				_columns = conn.Query($"show columns from `{database}`.`{table}`;")
+					.Select(c =>
+					{
+						var dic = (IDictionary<string, dynamic>)c;
+						return new ColumnDefine
 						{
-							var dic = (IDictionary<string, dynamic>)c;
-							return new Column
-							{
-								DataType = dic["Type"],
-								IsPrimary = dic["Key"] == "PRI",
-								Name = dic["Field"]
-							};
-						}).ToList();
-				}
+							DataType = dic["Type"],
+							IsPrimary = dic["Key"] == "PRI",
+							Name = dic["Field"]
+						};
+					}).ToList();
 			}
 			return _columns;
 		}
@@ -110,7 +108,7 @@ namespace ClickHouseMigrator.Impl
 			return $"SELECT {primaryKeysSql} FROM {tableSql} LIMIT {start}, {batchCount}";
 		}
 
-		protected override Tuple<IDbCommand, int> GenerateBatchQueryCommand(IDbConnection conn, List<Column> primaryKeys,
+		protected override Tuple<IDbCommand, int> GenerateBatchQueryCommand(IDbConnection conn, List<ColumnDefine> primaryKeys,
 			string selectColumnsSql, string tableSql, int batch, int batchCount)
 		{
 			var primaryKeysSql = GeneratePrimaryKeysSql(primaryKeys);
@@ -125,13 +123,13 @@ namespace ClickHouseMigrator.Impl
 
 			var command = conn.CreateCommand();
 
-			StringBuilder builder = new StringBuilder();
-			for (int j = 0; j < primaries.Length; ++j)
+			var builder = new StringBuilder();
+			for (var j = 0; j < primaries.Length; ++j)
 			{
 				var values = primaries.ElementAt(j);
 				builder.Append("(");
 
-				for (int k = 0; k < primaryKeys.Count; ++k)
+				for (var k = 0; k < primaryKeys.Count; ++k)
 				{
 					var parameterName = $"@P{j}";
 
@@ -158,7 +156,7 @@ namespace ClickHouseMigrator.Impl
 			return $"SELECT {selectColumnsSql} FROM {tableSql}";
 		}
 
-		private string GeneratePrimaryKeysSql(List<Column> columns)
+		private string GeneratePrimaryKeysSql(List<ColumnDefine> columns)
 		{
 			return string.Join(", ", columns.Select(k => $"`{k.Name}`"));
 		}
@@ -168,7 +166,7 @@ namespace ClickHouseMigrator.Impl
 			return $"`{database}`.`{table}`";
 		}
 
-		protected override string GenerateSelectColumnsSql(List<Column> columns)
+		protected override string GenerateSelectColumnsSql(List<ColumnDefine> columns)
 		{
 			return string.Join(',', columns.Select(c => $"`{c.Name}`"));
 		}

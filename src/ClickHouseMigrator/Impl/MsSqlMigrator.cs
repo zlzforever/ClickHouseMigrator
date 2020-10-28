@@ -8,21 +8,20 @@ using System.Text;
 
 namespace ClickHouseMigrator.Impl
 {
-	public class MsSqlMigrator : Migrator
+	public class MsSqlMigrator : RDBMSMigrator
 	{
-		private List<Column> _columns;
+		private List<ColumnDefine> _columns;
 
 		public MsSqlMigrator(Options options) : base(options)
 		{
 
 		}
-		protected override List<Column> GetColumns(string host, int port, string user, string pass, string database, string table)
+		protected override List<ColumnDefine> GetColumns(string host, int port, string user, string pass, string database, string table)
 		{
 			if (_columns == null)
 			{
-				using (var conn = CreateDbConnection(host, port, user, pass, database))
-				{					
-					var primaryKeys = conn.Query($@"
+				using var conn = CreateDbConnection(host, port, user, pass, database);
+				var primaryKeys = conn.Query($@"
 SELECT column_name as PRIMARYKEYCOLUMN
 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS TC
 INNER JOIN
@@ -32,19 +31,17 @@ INNER JOIN
 			 KU.table_name = '{table}'
 ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 					
-					_columns = conn.Query($"SELECT * FROM {database}.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'{table}';")
-						.Select(c =>
+				_columns = conn.Query($"SELECT * FROM {database}.INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'{table}';")
+					.Select(c =>
+					{
+						var dic = (IDictionary<string, dynamic>)c;						
+						return new ColumnDefine
 						{
-							var dic = (IDictionary<string, dynamic>)c;						
-							return new Column
-							{
-								DataType = dic["DATA_TYPE"],
-								IsPrimary = primaryKeys.Select(f => f.PRIMARYKEYCOLUMN).ToList().Contains(dic["COLUMN_NAME"]),
-								Name = dic["COLUMN_NAME"]
-							};
-						}).ToList();
-					
-				}
+							DataType = dic["DATA_TYPE"],
+							IsPrimary = primaryKeys.Select(f => f.PRIMARYKEYCOLUMN).ToList().Contains(dic["COLUMN_NAME"]),
+							Name = dic["COLUMN_NAME"]
+						};
+					}).ToList();
 			}
 			return _columns;
 		}
@@ -126,7 +123,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 			return $@"SELECT {primaryKeysSql} FROM {tableSql} ORDER BY {primaryKeysSql} OFFSET ({skipRowsCount}) ROWS FETCH NEXT {batchCount} ROWS ONLY;";			
 		}
 
-		protected override Tuple<IDbCommand, int> GenerateBatchQueryCommand(IDbConnection conn, List<Column> primaryKeys,
+		protected override Tuple<IDbCommand, int> GenerateBatchQueryCommand(IDbConnection conn, List<ColumnDefine> primaryKeys,
 			string selectColumnsSql, string tableSql, int batch, int batchCount)
 		{
 			var primaryKeysSql = GeneratePrimaryKeysSql(primaryKeys);
@@ -137,13 +134,13 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 				return new Tuple<IDbCommand, int>(null, 0);
 			}
 			var command = conn.CreateCommand();
-			StringBuilder builder = new StringBuilder();
-			for (int j = 0; j < primaries.Length; ++j)
+			var builder = new StringBuilder();
+			for (var j = 0; j < primaries.Length; ++j)
 			{
 				var values = primaries.ElementAt(j);
 				builder.Append("(");
 
-				for (int k = 0; k < primaryKeys.Count; ++k)
+				for (var k = 0; k < primaryKeys.Count; ++k)
 				{
 					var parameterName = $"@P{j}";
 
@@ -168,7 +165,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 			return $"SELECT {selectColumnsSql} FROM {tableSql}";
 		}
 
-		private string GeneratePrimaryKeysSql(List<Column> columns)
+		private string GeneratePrimaryKeysSql(List<ColumnDefine> columns)
 		{
 			return string.Join(", ", columns.Select(k => $"{k.Name}"));
 		}
@@ -177,7 +174,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 		{			
 			return $"{table}";
 		}
-		protected override string GenerateSelectColumnsSql(List<Column> columns)
+		protected override string GenerateSelectColumnsSql(List<ColumnDefine> columns)
 		{
 			return string.Join(',', columns.Select(c => $"{c.Name}"));
 		}

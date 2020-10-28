@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
@@ -7,67 +8,80 @@ namespace ClickHouseMigrator
 {
 	static class Program
 	{
-		static void Main(string[] args)
+		static async Task Main(string[] args)
 		{
-			if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-			{
-				args =
-					"--lowercase true --source sqlserver --shost localhost --suser sa --spass 1qazZAQ! --sport 1433 --sourced cnblogs --sourcet Cnblogs_Entity_Model -h localhost --targetd cnblogs --targett Cnblogs_Entity_Model --thread 1 -b 2000 --drop true --log false"
-						.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
-			}
-
 			var options = BuildOptions(args);
 
 			ConfigureLog(options);
 
-			var mode = options.Mode.ToLower();
-			if (mode != "parallel" && mode != "sequential")
-			{
-				Log.Logger.Error("Only support two modes: parallel, sequential.");
-				return;
-			}
+			// var mode = options.Mode.ToLower();
+			// if (mode != "parallel" && mode != "sequential")
+			// {
+			// 	Log.Logger.Error("Only support two modes: parallel, sequential.");
+			// 	return;
+			// }
 
-			if (!AppContext.TryGetSwitch("WELCOME", out bool printWelcome) && !printWelcome)
+// 			if (!AppContext.TryGetSwitch("WELCOME", out var printWelcome) && !printWelcome)
+// 			{
+// 				Console.ForegroundColor = ConsoleColor.Green;
+// 				Console.WriteLine(
+// 					"==========================================================================================================================================");
+// 				Console.WriteLine(
+// 					"======                                    ClickHouse Migrator V1.0.7 MIT   zlzforever@163.com                                      =======");
+// 				Console.WriteLine(@"
+// --source    or -s    : which RDBMS you want to migrate, right now i implement mysql migrator, for example: mysql
+// --shost     or -sh   : host of RDBMS, for example: 192.168.90.100, **default value: 127.0.0.1**
+// --sport     or -sport: port of RDBMS, for example: 3306
+// --suser     or -su   : user of RDBMS
+// --spass     or -sp   : password of RDBMS
+// --host      or -h    : host of Clickhouse for example: 192.168.90.101, **default value: 127.0.0.1**
+// --port      or -port : port of clickhouse, for example: 9000, **default value: 9000**
+// --user      or -u    : user of Clickhouse
+// --pass      or -p    : password of Clickhouse
+// --thread    or -t    : how many thread use to read data from mysql, **default value: process count of your machine**
+// --batch     or -b    : how many rows read from mysql one time and submit to clickhouse, **default value: 5000**
+// --sourced   or -sd   : database of RDBMS
+// --sourcet   or -st   : table of RDBMS which you want to migrate
+// --targetd   or -td   : migrate data to which target database in clickhouse, create it if not exists
+// --targett   or -tt   : migrate data to which target table in clickhouse, create it if not exists
+// --drop      or -d    : whether drop the exits table in clickhouse before migrating, **default value: false**
+// --lowercase or -lc   : ignore the word case in clickhouse, **default value: true**
+// --orderby   or -o    : when order by is null, use primary as order by in clickhouse, if use orderby, then will miss primary
+// --trace     or -t    : record performance information, **default value: false**
+// --mode      or -m    : migrate mode, parallel or sequential, when use sequential thread argument are useless, **default value: parallel**
+// --log       or -l    : whether write file log, **default value: false**
+// ");
+			// 	Console.WriteLine(
+			// 		"==========================================================================================================================================");
+			// 	Console.ForegroundColor = ConsoleColor.White;
+			// 	AppContext.SetSwitch("WELCOME", true);
+			// }
+
+			if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
 			{
-				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine(
-					"==========================================================================================================================================");
-				Console.WriteLine(
-					"======                                    ClickHouse Migrator V1.0.7 MIT   zlzforever@163.com                                      =======");
-				Console.WriteLine(@"
---source    or -s    : which RDBMS you want to migrate, right now i implement mysql migrator, for example: mysql
---shost     or -sh   : host of RDBMS, for example: 192.168.90.100, **default value: 127.0.0.1**
---sport     or -sport: port of RDBMS, for example: 3306
---suser     or -su   : user of RDBMS
---spass     or -sp   : password of RDBMS
---host      or -h    : host of Clickhouse for example: 192.168.90.101, **default value: 127.0.0.1**
---port      or -port : port of clickhouse, for example: 9000, **default value: 9000**
---user      or -u    : user of Clickhouse
---pass      or -p    : password of Clickhouse
---thread    or -t    : how many thread use to read data from mysql, **default value: process count of your machine**
---batch     or -b    : how many rows read from mysql one time and submit to clickhouse, **default value: 5000**
---sourced   or -sd   : database of RDBMS
---sourcet   or -st   : table of RDBMS which you want to migrate
---targetd   or -td   : migrate data to which target database in clickhouse, create it if not exists
---targett   or -tt   : migrate data to which target table in clickhouse, create it if not exists
---drop      or -d    : whether drop the exits table in clickhouse before migrating, **default value: false**
---lowercase or -lc   : ignore the word case in clickhouse, **default value: true**
---orderby   or -o    : when order by is null, use primary as order by in clickhouse, if use orderby, then will miss primary
---trace     or -t    : record performance information, **default value: false**
---mode      or -m    : migrate mode, parallel or sequential, when use sequential thread argument are useless, **default value: parallel**
---log       or -l    : whether write file log, **default value: false**
-");
-				Console.WriteLine(
-					"==========================================================================================================================================");
-				Console.ForegroundColor = ConsoleColor.White;
-				AppContext.SetSwitch("WELCOME", true);
+				args =
+					"--source excel --file /Users/lewis/Documents/Lewis/hicto/副本/话梅/data/店铺标记2.xlsx --database harmay --table shop_types --sheets Sheet1,Sheet2"
+						.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
 			}
 
 			var start = DateTime.Now;
-			var migrator = MigratorFactory.Create(options);
-			migrator.Run();
+			var dataSource = GetDataSource(args);
+			var migrator = MigratorFactory.Create(dataSource);
+			await migrator.RunAsync(args);
 			var end = DateTime.Now;
 			Log.Logger.Information($"Complete migrate: {(end - start).TotalSeconds} s.");
+		}
+
+		private static string GetDataSource(string[] args)
+		{
+			var configurationBuilder = new ConfigurationBuilder();
+			configurationBuilder.AddCommandLine(args, new Dictionary<string, string>
+			{
+				{"--source", "DataSource"},
+				{"-s", "DataSource"}
+			});
+			var configuration = configurationBuilder.Build();
+			return configuration["DataSource"];
 		}
 
 		private static Options BuildOptions(string[] args)

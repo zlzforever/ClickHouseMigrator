@@ -1,7 +1,9 @@
-﻿namespace ClickHouseMigrator
+﻿using System.Threading.Tasks;
+
+namespace ClickHouseMigrator
 {
 	public interface IMigrator
 	{
-		void Run();
+		Task RunAsync(params string[] args);
 	}
 }

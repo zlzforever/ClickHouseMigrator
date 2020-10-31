@@ -1,6 +1,7 @@
-﻿using ClickHouseMigrator.Impl;
-using System;
-using ClickHouseMigrator.Impl.Excel;
+﻿using System;
+using ClickHouseMigrator.Excel;
+using ClickHouseMigrator.MySql;
+using ClickHouseMigrator.SqlServer;
 
 namespace ClickHouseMigrator
 {
@@ -9,16 +10,21 @@ namespace ClickHouseMigrator
 		public static IMigrator Create(string source)
 		{
 			source = source?.ToLower();
+			if (string.IsNullOrWhiteSpace(source))
+			{
+				throw new Exception("DataSource is required");
+			}
+
 			switch (source)
 			{
 				case "mysql":
 				{
-					return new MySqlMigrator(null);
+					return new MySqlMigrator();
 				}
 				case "mssql":
 				case "sqlserver":
 				{
-					return new MsSqlMigrator(null);
+					return new SqlServerMigrator();
 				}
 				case "excel":
 				{
@@ -26,7 +32,7 @@ namespace ClickHouseMigrator
 				}
 				default:
 				{
-					throw new NotImplementedException($"Not implemented {source} migrator.");
+					throw new Exception($"DataSource: {source} is not supported");
 				}
 			}
 		}

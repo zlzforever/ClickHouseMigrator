@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 
-namespace ClickHouseMigrator.Impl.Excel
+namespace ClickHouseMigrator.Excel
 {
 	public class ExcelOptions : ClickHouseOptions
 	{
@@ -13,8 +13,6 @@ namespace ClickHouseMigrator.Impl.Excel
 			_configuration = configuration;
 		}
 
-		public string File => _configuration["File"];
-
 		public string[] Sheets => string.IsNullOrWhiteSpace(_configuration["Sheets"])
 			? new string[0]
 			: _configuration["Sheets"].Split(',', StringSplitOptions.RemoveEmptyEntries).ToHashSet().ToArray();
@@ -23,8 +21,8 @@ namespace ClickHouseMigrator.Impl.Excel
 			? 1
 			: int.Parse(_configuration["StartRow"]);
 
-		public int SheetStart => string.IsNullOrWhiteSpace(_configuration["SheetStart"])
+		public int StartSheet => string.IsNullOrWhiteSpace(_configuration["StartSheet"])
 			? -1
-			: int.Parse(_configuration["SheetStart"]);
+			: int.Parse(_configuration["StartSheet"]);
 	}
 }

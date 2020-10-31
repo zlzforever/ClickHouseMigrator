@@ -30,7 +30,7 @@ namespace ClickHouseMigrator
 		/// Clickhouse user
 		/// </summary>
 		public string User => string.IsNullOrWhiteSpace(_configuration["User"])
-			? null
+			? "default"
 			: _configuration["User"].Trim();
 
 		/// <summary>
@@ -40,18 +40,60 @@ namespace ClickHouseMigrator
 			? null
 			: _configuration["Password"].Trim();
 
-		public string[] OrderBy => string.IsNullOrWhiteSpace(_configuration["OrderBy"])
-			? new string[0]
-			: _configuration["OrderBy"].Split(',', StringSplitOptions.RemoveEmptyEntries);
-
 		public string Database => _configuration["Database"];
 
 		public string Table => _configuration["Table"];
+		
+		public string File => _configuration["File"];
 
-		public int BatchSize => string.IsNullOrWhiteSpace(_configuration["BatchSize"])
-			? 1000
-			: int.Parse(_configuration["BatchSize"]);
+		public int Batch => string.IsNullOrWhiteSpace(_configuration["Batch"])
+			? 10000
+			: int.Parse(_configuration["Batch"]);
 
-		public bool DropTable => !string.IsNullOrWhiteSpace(_configuration["DropTable"]) && bool.Parse(_configuration["DropTable"]);
+		public bool DropTable => !string.IsNullOrWhiteSpace(_configuration["DropTable"]) &&
+		                         bool.Parse(_configuration["DropTable"]);
+
+		public bool Lowercase => !string.IsNullOrWhiteSpace(_configuration["Lowercase"]) &&
+		                         bool.Parse(_configuration["Lowercase"]);
+
+		/// <summary>
+		/// Clickhouse host
+		/// </summary>
+		public string SourceHost => string.IsNullOrWhiteSpace(_configuration["SourceHost"])
+			? "localhost"
+			: _configuration["SourceHost"].Trim();
+
+		/// <summary>
+		/// Clickhouse port
+		/// </summary>
+		public int SourcePort => string.IsNullOrWhiteSpace(_configuration["SourcePort"])
+			? 3306
+			: int.Parse(_configuration["SourcePort"].Trim());
+
+		/// <summary>
+		/// Clickhouse user
+		/// </summary>
+		public string SourceUser => string.IsNullOrWhiteSpace(_configuration["SourceUser"])
+			? "root"
+			: _configuration["SourceUser"].Trim();
+
+		/// <summary>
+		/// Clickhouse password
+		/// </summary>
+		public string SourcePassword => string.IsNullOrWhiteSpace(_configuration["SourcePassword"])
+			? null
+			: _configuration["SourcePassword"].Trim();
+
+		public string SourceDatabase => string.IsNullOrWhiteSpace(_configuration["SourceDatabase"])
+			? null
+			: _configuration["SourceDatabase"].Trim();
+
+		public string SourceTable => string.IsNullOrWhiteSpace(_configuration["SourceTable"])
+			? null
+			: _configuration["SourceTable"].Trim();
+
+		public int Thread => string.IsNullOrWhiteSpace(_configuration["Thread"])
+			? Environment.ProcessorCount
+			: int.Parse(_configuration["Thread"].Trim());
 	}
 }

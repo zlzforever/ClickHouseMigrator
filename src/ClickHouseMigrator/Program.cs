@@ -1,75 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Serilog;
 
 namespace ClickHouseMigrator
 {
-	static class Program
+	public static class Program
 	{
+		public static string Line =
+			"=======================================================================================================================";
+
 		static async Task Main(string[] args)
 		{
-			var options = BuildOptions(args);
+			Logger.Information($"Options: {string.Join(" ", Environment.GetCommandLineArgs())}");
 
-			ConfigureLog(options);
-
-			// var mode = options.Mode.ToLower();
-			// if (mode != "parallel" && mode != "sequential")
-			// {
-			// 	Log.Logger.Error("Only support two modes: parallel, sequential.");
-			// 	return;
-			// }
-
-// 			if (!AppContext.TryGetSwitch("WELCOME", out var printWelcome) && !printWelcome)
-// 			{
-// 				Console.ForegroundColor = ConsoleColor.Green;
-// 				Console.WriteLine(
-// 					"==========================================================================================================================================");
-// 				Console.WriteLine(
-// 					"======                                    ClickHouse Migrator V1.0.7 MIT   zlzforever@163.com                                      =======");
-// 				Console.WriteLine(@"
-// --source    or -s    : which RDBMS you want to migrate, right now i implement mysql migrator, for example: mysql
-// --shost     or -sh   : host of RDBMS, for example: 192.168.90.100, **default value: 127.0.0.1**
-// --sport     or -sport: port of RDBMS, for example: 3306
-// --suser     or -su   : user of RDBMS
-// --spass     or -sp   : password of RDBMS
-// --host      or -h    : host of Clickhouse for example: 192.168.90.101, **default value: 127.0.0.1**
-// --port      or -port : port of clickhouse, for example: 9000, **default value: 9000**
-// --user      or -u    : user of Clickhouse
-// --pass      or -p    : password of Clickhouse
-// --thread    or -t    : how many thread use to read data from mysql, **default value: process count of your machine**
-// --batch     or -b    : how many rows read from mysql one time and submit to clickhouse, **default value: 5000**
-// --sourced   or -sd   : database of RDBMS
-// --sourcet   or -st   : table of RDBMS which you want to migrate
-// --targetd   or -td   : migrate data to which target database in clickhouse, create it if not exists
-// --targett   or -tt   : migrate data to which target table in clickhouse, create it if not exists
-// --drop      or -d    : whether drop the exits table in clickhouse before migrating, **default value: false**
-// --lowercase or -lc   : ignore the word case in clickhouse, **default value: true**
-// --orderby   or -o    : when order by is null, use primary as order by in clickhouse, if use orderby, then will miss primary
-// --trace     or -t    : record performance information, **default value: false**
-// --mode      or -m    : migrate mode, parallel or sequential, when use sequential thread argument are useless, **default value: parallel**
-// --log       or -l    : whether write file log, **default value: false**
-// ");
-			// 	Console.WriteLine(
-			// 		"==========================================================================================================================================");
-			// 	Console.ForegroundColor = ConsoleColor.White;
-			// 	AppContext.SetSwitch("WELCOME", true);
-			// }
-
-			if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+			if (!AppContext.TryGetSwitch("WELCOME", out var printWelcome) && !printWelcome)
 			{
-				args =
-					"--source excel --file /Users/lewis/Documents/Lewis/hicto/副本/话梅/data/店铺标记2.xlsx --database harmay --table shop_types --sheets Sheet1,Sheet2"
-						.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
+				Console.ForegroundColor = ConsoleColor.Green;
+				Console.WriteLine(Line);
+				Console.WriteLine(
+					"ClickHouse Migrator V1.0.8 MIT   zlzforever@163.com");
+				Console.WriteLine(@"
+--src            : data source: MySql, SqlServer, Excel etc
+--src-host       : host of data source, for example: 192.168.90.100, **default value: 127.0.0.1**
+--src-port       : port of data source, for example: 3306
+--src-user       : user of data source
+--src-password   : password of data source
+--src-database   : database of data source
+--src-table      : table of data source
+--host           : Clickhouse host: 192.168.90.101, **default value: 127.0.0.1**
+--port           : Clickhouse port, for example: 9000, **default value: 9000**
+--user           : Clickhouse user
+--password       : Clickhouse password
+--database       : Clickhouse database, if this arg is null, will use --src-database as target database name
+--table          : Clickhouse table, if this arg is null, will use --src-table as target table name
+--thread         : how many thread use to insert data to ClickHouse, **default value: process count of your machine**
+--batch          : how many rows insert to ClickHouse one time, **default value: 10000**
+--drop-table     : whether drop the exits table in clickhouse before migrating, **default value: false**
+--file           : File path of Excel etc
+--sheets         : Which sheets will be migrated, columns are same in every sheet, used like: Sheet1,Sheet2,Sheet3
+--start-row      : 
+--lowercase      : ignore the word case in clickhouse, **default value: true**
+");
+				Console.WriteLine(Line);
+				Console.ForegroundColor = ConsoleColor.White;
+				AppContext.SetSwitch("WELCOME", true);
 			}
 
-			var start = DateTime.Now;
-			var dataSource = GetDataSource(args);
-			var migrator = MigratorFactory.Create(dataSource);
-			await migrator.RunAsync(args);
-			var end = DateTime.Now;
-			Log.Logger.Information($"Complete migrate: {(end - start).TotalSeconds} s.");
+			if (args.Length == 0)
+			{
+				return;
+			}
+
+			if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" || args.Contains("test"))
+			{
+				// args =
+				// 	"--src mysql --src-host localhost --src-port 3306 --src-user root --src-password 1qazZAQ! --src-database test --src-table user10w --drop-table true"
+				// 		.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
+
+				// args =
+				// 	"--src excel --file Book.xlsx --database test --table t1 --start-row 2 --sheet-start 2 --drop-table true"
+				// 		.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
+			}
+
+			try
+			{
+				var dataSource = GetDataSource(args);
+				var migrator = MigratorFactory.Create(dataSource);
+				await migrator.RunAsync(args);
+			}
+			catch (Exception e)
+			{
+				Logger.Error(e.Message);
+			}
 		}
 
 		private static string GetDataSource(string[] args)
@@ -77,97 +81,10 @@ namespace ClickHouseMigrator
 			var configurationBuilder = new ConfigurationBuilder();
 			configurationBuilder.AddCommandLine(args, new Dictionary<string, string>
 			{
-				{"--source", "DataSource"},
-				{"-s", "DataSource"}
+				{"--src", "DataSource"}
 			});
 			var configuration = configurationBuilder.Build();
 			return configuration["DataSource"];
-		}
-
-		private static Options BuildOptions(string[] args)
-		{
-			var configurationBuilder = new ConfigurationBuilder();
-			configurationBuilder.AddCommandLine(args, new Dictionary<string, string>
-			{
-				{"--source", "DataSource"},
-				{"-s", "DataSource"},
-
-				{"--shost", "SourceHost"},
-				{"-sh", "SourceHost"},
-
-				{"--sport", "SourcePort"},
-				{"-sport", "SourcePort"},
-
-				{"--suser", "SourceUser"},
-				{"-su", "SourceUser"},
-
-				{"--spass", "SourcePassword"},
-				{"-sp", "SourcePassword"},
-
-				{"--host", "Host"},
-				{"-h", "Host"},
-
-				{"--port", "Port"},
-				{"-port", "Port"},
-
-				{"--user", "User"},
-				{"-u", "User"},
-
-				{"--pass", "Password"},
-				{"-p", "Password"},
-
-				{"--sourced", "SourceDatabase"},
-				{"-sd", "SourceDatabase"},
-
-				{"--sourcet", "SourceTable"},
-				{"-st", "SourceTable"},
-
-				{"--targetd", "TargetDatabase"},
-				{"-td", "TargetDatabase"},
-
-				{"--targett", "TargetTable"},
-				{"-tt", "TargetTable"},
-
-				{"--drop", "Drop"},
-				{"-d", "Drop"},
-
-				{"--lowercase", "Lowercase"},
-				{"-lc", "Lowercase"},
-
-				{"--batch", "Batch"},
-				{"-b", "Batch"},
-
-				{"--thread", "Thread"},
-				{"-t", "Thread"},
-
-				{"--trace", "Trace"},
-				{"-tr", "Trace"},
-
-				{"--mode", "Mode"},
-				{"-m", "Mode"},
-
-				{"--log", "Log"},
-				{"-l", "Log"},
-
-				{"--orderby", "OrderBy"},
-				{"-o", "OrderBy"}
-			});
-			var configuration = configurationBuilder.Build();
-			return new Options(configuration);
-		}
-
-		private static void ConfigureLog(Options options)
-		{
-			var loggerConfiguration = new LoggerConfiguration()
-				.MinimumLevel.Verbose()
-				.WriteTo.Console(theme: SerilogHelper.Theme);
-			if (options.Log)
-			{
-				loggerConfiguration = loggerConfiguration.WriteTo.RollingFile("ClickHouseMigrator.log");
-			}
-
-			Log.Logger = loggerConfiguration.CreateLogger();
-			Log.Logger.Information($"Options: {string.Join(" ", Environment.GetCommandLineArgs())}");
 		}
 	}
 }

@@ -55,9 +55,9 @@ namespace ClickHouseMigrator
 
 			if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" || args.Contains("test"))
 			{
-				// args =
-				// 	"--src mysql --src-host localhost --src-port 3306 --src-user root --src-password 1qazZAQ! --src-database test --src-table user10w --drop-table true"
-				// 		.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
+				args =
+					"--src mysql --src-host 192.168.192.2 --src-port 3306 --src-user root --src-password 1qazZAQ! --src-database test --src-table user1000w --drop-table true"
+						.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries);
 
 				// args =
 				// 	"--src excel --file Book.xlsx --database test --table t1 --start-row 2 --sheet-start 2 --drop-table true"

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ClickHouse.Ado;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,7 @@ namespace ClickHouseMigrator
 		private string _database;
 		private string _table;
 		private string _connectionString;
+		private DateTime _start;
 		protected Lazy<List<ColumnDefine>> Columns => new Lazy<List<ColumnDefine>>(FetchTablesColumns);
 		protected abstract List<ColumnDefine> FetchTablesColumns();
 		protected abstract (dynamic[][] Data, int Length) FetchRows(int count);
@@ -72,16 +74,15 @@ namespace ClickHouseMigrator
 
 			InitializeTable();
 
-			var stopwatch = new Stopwatch();
-			stopwatch.Start();
+			_start = DateTime.Now;
 
 			var rows = Migrate();
 
-			stopwatch.Stop();
-			var totalSeconds = (int) (stopwatch.ElapsedMilliseconds / 1000);
+			var end = DateTime.Now;
+			var totalSeconds = (int) (end - _start).TotalSeconds;
 			var speed = totalSeconds == 0 ? rows : (int) (rows / totalSeconds);
 			Console.WriteLine();
-			Logger.Information($"Complete {totalSeconds} s, Speed {speed} rows/s");
+			Console.WriteLine($"Elapsed {totalSeconds} sec. Processed {rows} rows ({speed} rows/s.)");
 			return Task.CompletedTask;
 		}
 
@@ -121,7 +122,6 @@ namespace ClickHouseMigrator
 			var insertSql = $"INSERT INTO {_database}.{_table} ({columnsSql}) VALUES @bulk;";
 			var tasks = new Task[Options.Thread];
 
-			var j = 0;
 			for (int i = 0; i < Options.Thread; ++i)
 			{
 				var task = Task.Factory.StartNew(() =>
@@ -159,31 +159,6 @@ namespace ClickHouseMigrator
 
 							command.ExecuteNonQuery();
 
-							lock (this)
-							{
-								j++;
-								Console.Write("-");
-								if (j >= Program.Line.Length)
-								{
-									for (int k = 0; k < Program.Line.Length; ++k)
-									{
-										Console.Write('\b');
-									}
-
-									for (int k = 0; k < Program.Line.Length; ++k)
-									{
-										Console.Write(' ');
-									}
-
-									for (int k = 0; k < Program.Line.Length; ++k)
-									{
-										Console.Write('\b');
-									}
-
-									j = 0;
-								}
-							}
-
 							if (result.Length < Options.Batch)
 							{
 								break;
@@ -198,9 +173,62 @@ namespace ClickHouseMigrator
 				tasks[i] = task;
 			}
 
+			var cancellationTokenSource = new CancellationTokenSource();
+
+			var progress = Task.Factory.StartNew(async () =>
+			{
+				string msg = null;
+				while (!cancellationTokenSource.IsCancellationRequested)
+				{
+					//Progress: 2.10 million rows, 100.54 MB (709.92 thousand rows/s., 34.03 MB/s
+					var end = DateTime.Now;
+					var totalSeconds = (int) (end - _start).TotalSeconds;
+
+					lock (this)
+					{
+						var speed = totalSeconds == 0 ? total : (int) (total / totalSeconds);
+						if (!string.IsNullOrWhiteSpace(msg))
+						{
+							ClearLine(msg.Length);
+						}
+
+						msg = $"Progress: {total} rows ({speed} rows/s.)";
+						Console.Write(msg);
+					}
+
+					await Task.Delay(1500, cancellationTokenSource.Token);
+				}
+
+				if (!string.IsNullOrWhiteSpace(msg))
+				{
+					ClearLine(msg.Length);
+				}
+			}, cancellationTokenSource.Token);
+
 			Task.WaitAll(tasks);
 
+			cancellationTokenSource.Cancel();
+			Task.WaitAll(progress);
+
 			return total;
+		}
+
+		private void ClearLine(int count)
+		{
+			for (int k = 0; k < count; ++k)
+			{
+				Console.Write('\b');
+			}
+
+			for (int k = 0; k < count; ++k)
+			{
+				Console.Write(' ');
+			}
+
+			for (int k = 0; k < count; ++k)
+			{
+				Console.Write('\b');
+			}
 		}
 
 		private void InitializeOptions(string[] args)

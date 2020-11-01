@@ -71,7 +71,7 @@ Elapsed 63 sec. Processed 18627236 rows (295670 rows/s.)
 
 ### Buy me a coffee
 
-![](https://github.com/zlzforever/ClickHouseMigrator/blob/master/images/alipay.png)
+![](https://github.com/zlzforever/ClickHouseMigrator/blob/master/images/alipay.jpeg)
 
 ### AREAS FOR IMPROVEMENTS
 

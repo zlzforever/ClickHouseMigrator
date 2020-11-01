@@ -1,6 +1,8 @@
 # ClickHouseMigrator
 
-Use to migrate data from RDBMS to ClickHouse, create database and table auto.
+Help to migrate data to ClickHouse, create database and table auto.
+
+Support excel, mysql, sqlserver now
 
 ### DEVELOP ENVIRONMENT
 

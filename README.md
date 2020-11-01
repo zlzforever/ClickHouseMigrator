@@ -2,69 +2,76 @@
 
 Use to migrate data from RDBMS to ClickHouse, create database and table auto.
 
-### DEVELOP ENVIROMENT
+### DEVELOP ENVIRONMENT
 
 - Visual Studio 2017(15.3 or later)
-- [.NET Core 2.1 or later](https://www.microsoft.com/net/download/windows)
+- [.NET Core 3.1 or later](https://www.microsoft.com/net/download/windows)
 
 ### OPTIONS
 
 ```
---source    or -s    : which RDBMS you want to migrate, right now i implement mysql migrator, for example: mysql
---shost     or -sh   : host of RDBMS, for example: 192.168.90.100, **default value: 127.0.0.1**
---sport     or -sport: port of RDBMS, for example: 3306
---suser     or -su   : user of RDBMS
---spass     or -sp   : password of RDBMS
---host      or -h    : host of Clickhouse for example: 192.168.90.101, **default value: 127.0.0.1**
---port      or -port : port of clickhouse, for example: 9000, **default value: 9000**
---user      or -u    : user of Clickhouse
---pass      or -p    : password of Clickhouse
---thread    or -t    : how many thread use to read data from mysql, **default value: process count of your machine**
---batch     or -b    : how many rows read from mysql one time and submit to clickhouse, **default value: 5000**
---sourced   or -sd   : database of RDBMS
---sourcet   or -st   : table of RDBMS which you want to migrate
---targetd   or -td   : migrate data to which target database in clickhouse, create it if not exists
---targett   or -tt   : migrate data to which target table in clickhouse, create it if not exists
---drop      or -d    : whether drop the exits table in clickhouse before migrating, **default value: false**
---lowercase or -lc   : ignore the word case in clickhouse, **default value: true**
---orderby   or -o    : when order by is null, use primary as order by in clickhouse, if use orderby, then will miss primary
---trace     or -t    : record performance information, **default value: false**
---mode      or -m    : migrate mode, parallel or sequential, when use sequential thread argument are useless, **default value: parallel**
---log       or -l    : whether write file log, **default value: false**
+--src            : data source: MySql, SqlServer, Excel etc
+--src-host       : host of data source, for example: 192.168.90.100, **default value: 127.0.0.1**
+--src-port       : port of data source, for example: 3306
+--src-user       : user of data source
+--src-password   : password of data source
+--src-database   : database of data source
+--src-table      : table of data source
+--host           : Clickhouse host: 192.168.90.101, **default value: 127.0.0.1**
+--port           : Clickhouse port, for example: 9000, **default value: 9000**
+--user           : Clickhouse user
+--password       : Clickhouse password
+--database       : Clickhouse database, if this arg is null, will use --src-database as target database name
+--table          : Clickhouse table, if this arg is null, will use --src-table as target table name
+--thread         : how many thread use to insert data to ClickHouse, **default value: process count of your machine**
+--batch          : how many rows insert to ClickHouse one time, **default value: 10000**
+--drop-table     : whether drop the exits table in clickhouse before migrating, **default value: false**
+--file           : File path of Excel etc
+--sheets         : Which sheets will be migrated, columns are same in every sheet, used like: Sheet1,Sheet2,Sheet3
+--start-row      : 
+--lowercase      : ignore the word case in clickhouse, **default value: true**
 ```
 
 ### HOW TO USE
 
-- install dotnet core 2.2 follow: https://www.microsoft.com/net/learn/get-started/windows#install
+- install dotnet core 3.1 follow: https://www.microsoft.com/net/learn/get-started/windows#install
 - on windows run below command in command prompt, and in terminal for linux
 
         dotnet tool install -g ClickHouseMigrator
 
 - the migrate tool named chm, so run tool like below
 
-      > chm --source sqlserver --shost localhost --suser sa --spass 1qazZAQ! --sport 1433 \
-      --sourcedb cnblogs --sourcetb cnblogs_entity_model \
-      -h localhost \
-      --targetdb cnblogs \
-      --targettb cnblogs_entity_model \
-	  --thread 1 \
-	  -b 2000 \
-	  --drop true \
-	  --log true \
-	  -m parallel
+      > chm --src mysql --src-host localhost --src-port 3306 --src-user root --src-password 1qazZAQ! \
+        --src-database test --src-table user1000w --drop-table true
 
 
 ### SHOW
 
-* 32  Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz
-* 128 G
-* 4T HDD * 4 RAID10 IOPS 3000
+* 3.2 GHz 8-Core Intel Xeon W
+* 32 G
+* 1T SSD
 
-![DESIGN](https://github.com/zlzforever/ClickHouseMigrator/raw/master/images/example.png?raw=true)
+#### ClickHouse command
 
-### Buy me a coffe
+```
+CREATE TABLE test.user
+ENGINE = MergeTree
+ORDER BY id AS
+SELECT *
+FROM mysql('192.168.192.2:3306', 'test', 'user1000w', 'root', '1qazZAQ!')
+```
 
-![](https://github.com/zlzforever/DotnetSpiderPictures/raw/master/pay.png)
+Elapsed: 27.965 sec. Processed 18.68 million rows, 895.49 MB (667.94 thousand rows/s., 32.02 MB/s.)
+
+#### ClickHouseMigrator
+
+![](https://github.com/zlzforever/ClickHouseMigrator/blob/master/images/example.png)
+
+Elapsed 63 sec. Processed 18627236 rows (295670 rows/s.)
+
+### Buy me a coffee
+
+![](https://github.com/zlzforever/ClickHouseMigrator/blob/master/images/alipay.png)
 
 ### AREAS FOR IMPROVEMENTS
 

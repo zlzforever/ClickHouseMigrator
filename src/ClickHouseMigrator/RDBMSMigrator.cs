@@ -43,7 +43,7 @@ namespace ClickHouseMigrator
 
 		protected override void InitializeTable()
 		{
-			foreach (var column in Columns.Value)
+			foreach (var column in Columns)
 			{
 				column.DataType = ConvertToClickHouseDataType(column.DataType);
 			}

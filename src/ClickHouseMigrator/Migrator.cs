@@ -16,7 +16,7 @@ namespace ClickHouseMigrator
 		private string _table;
 		private string _connectionString;
 		private DateTime _start;
-		protected Lazy<List<ColumnDefine>> Columns => new Lazy<List<ColumnDefine>>(FetchTablesColumns);
+		protected List<ColumnDefine> Columns; // => new Lazy<List<ColumnDefine>>(FetchTablesColumns);
 		protected abstract List<ColumnDefine> FetchTablesColumns();
 		protected abstract (dynamic[][] Data, int Length) FetchRows(int count);
 		protected abstract void Initialize(IConfiguration configuration);
@@ -63,7 +63,7 @@ namespace ClickHouseMigrator
 
 			if (Options.Lowercase)
 			{
-				foreach (var column in Columns.Value)
+				foreach (var column in Columns)
 				{
 					column.Name = column.Name.ToLower();
 				}
@@ -72,6 +72,7 @@ namespace ClickHouseMigrator
 				_table = _table.ToLower();
 			}
 
+			Columns = FetchTablesColumns();
 			InitializeTable();
 
 			_start = DateTime.Now;
@@ -100,9 +101,9 @@ namespace ClickHouseMigrator
 
 		protected virtual string GenerateCreateTableSql()
 		{
-			var columnsSql = string.Join(", ", Columns.Value.Select(x => $"`{x.Name}` {x.DataType}"));
+			var columnsSql = string.Join(", ", Columns.Select(x => $"`{x.Name}` {x.DataType}"));
 
-			var primaryColumns = Columns.Value.Where(x => x.IsPrimary).ToList();
+			var primaryColumns = Columns.Where(x => x.IsPrimary).ToList();
 			var primaryColumnsSql = string.Join(", ", primaryColumns.Select(x => $"`{x.Name}`"));
 			var primarySql =
 				primaryColumns.Count == 0
@@ -115,7 +116,7 @@ namespace ClickHouseMigrator
 
 		private long Migrate()
 		{
-			var columnNames = Columns.Value.Select(x => $"`{x.Name}`").ToArray();
+			var columnNames = Columns.Select(x => $"`{x.Name}`").ToArray();
 
 			long total = 0;
 			var columnsSql = string.Join(", ", columnNames);

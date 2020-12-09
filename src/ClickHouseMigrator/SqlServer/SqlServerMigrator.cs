@@ -43,7 +43,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION; ").ToList();
 		}
 
 		protected override Lazy<string> ConnectionString => new Lazy<string>(() =>
-			$"Server=tcp:{Options.SourceHost},{Options.SourcePort};Initial Catalog={Options.SourceDatabase};Password={Options.SourcePassword};Persist Security Info=False;User ID={Options.User};MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=3000;");
+			$"Server=tcp:{Options.SourceHost},{Options.SourcePort};Initial Catalog={Options.SourceDatabase};Password={Options.SourcePassword};Persist Security Info=False;User ID={Options.SourceUser};MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=3000;");
 
 		protected override IDbConnection CreateDbConnection()
 		{

@@ -32,7 +32,7 @@ namespace ClickHouseMigrator.SqlServer
 			{
 				var columnDefine = new ColumnDefine
 				{
-					DataType = column["DATA_TYPE"],
+					DataType = ConvertToClickHouseDataType(column["DATA_TYPE"]),
 					IsPrimary = primaryKeys.Select(f => f.PRIMARYKEYCOLUMN).ToList()
 						.Contains(column["COLUMN_NAME"]),
 					Name = column["COLUMN_NAME"]

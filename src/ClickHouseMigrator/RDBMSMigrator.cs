@@ -43,10 +43,13 @@ namespace ClickHouseMigrator
 
 		protected override void InitializeTable()
 		{
-			foreach (var column in Columns.Value)
-			{
-				column.DataType = ConvertToClickHouseDataType(column.DataType);
-			}
+
+			//this is readonly at least for SQL Server (had to move it to FetchColumns like MySql)
+			//and for MySQL does not make sense because the mapping type is translated at FetchColumns()
+			//foreach (var column in Columns.Value)
+			//{
+			//	column.DataType = ConvertToClickHouseDataType(column.DataType);
+			//}
 
 			base.InitializeTable();
 		}

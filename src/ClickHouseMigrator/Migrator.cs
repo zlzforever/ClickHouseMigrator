@@ -100,10 +100,14 @@ namespace ClickHouseMigrator
 
 		protected virtual string GenerateCreateTableSql()
 		{
-			var columnsSql = string.Join(", ", Columns.Value.Select(x => $"`{x.Name}` {x.DataType}"));
+			//As Columns is lazy this is to not launch FetchDataColumns twice
+			var columns = Columns.Value;
+			var columnsSql = string.Join(", ", columns.Select(x => $"`{x.Name}` {x.DataType}"));
 
-			var primaryColumns = Columns.Value.Where(x => x.IsPrimary).ToList();
+			var primaryColumns = columns.Where(x => x.IsPrimary).ToList();
 			var primaryColumnsSql = string.Join(", ", primaryColumns.Select(x => $"`{x.Name}`"));
+
+			//todo: As SQL Server columnStores does not have Primary Key, think about howto create the PK and OrderBy in CH
 			var primarySql =
 				primaryColumns.Count == 0
 					? " ORDER BY tuple()"
@@ -157,6 +161,8 @@ namespace ClickHouseMigrator
 								Value = data
 							});
 
+							//todo fails if there is a column if NULL
+							//as Nullable columns impacts performance on ClickHouse, it would have to be coalesced() at source
 							command.ExecuteNonQuery();
 
 							if (result.Length < Options.Batch)

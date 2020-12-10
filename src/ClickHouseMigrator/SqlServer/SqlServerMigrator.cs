@@ -99,7 +99,7 @@ namespace ClickHouseMigrator.SqlServer
 				case "numeric":
 				case "decimal":
 					{
-						//todo get scale & precision as Float is incorrect because it is an approximation!
+						//todo get scale & precision from sys.columns -> Float is incorrect because it is an approximation!
 						return "Float64";
 					}
 				case "bigint":

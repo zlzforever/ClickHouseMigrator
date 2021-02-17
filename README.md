@@ -6,8 +6,8 @@ Support excel, mysql, sqlserver now
 
 ### DEVELOP ENVIRONMENT
 
-- Visual Studio 2017(15.3 or later)
-- [.NET Core 3.1 or later](https://www.microsoft.com/net/download/windows)
+- Visual Studio 2019(16.8 or later)
+- [.NET 5.0 or later](https://dotnet.microsoft.com/download)
 
 ### OPTIONS
 
@@ -36,7 +36,7 @@ Support excel, mysql, sqlserver now
 
 ### HOW TO USE
 
-- install dotnet core 3.1 follow: https://www.microsoft.com/net/learn/get-started/windows#install
+- install .NET 5 follow: https://dotnet.microsoft.com/download/dotnet/5.0
 - on windows run below command in command prompt, and in terminal for linux
 
         dotnet tool install -g ClickHouseMigrator
@@ -75,6 +75,8 @@ Elapsed 63 sec. Processed 18627236 rows (295670 rows/s.)
 
 ![](https://github.com/zlzforever/ClickHouseMigrator/blob/master/images/alipay.jpeg)
 
-### AREAS FOR IMPROVEMENTS
+### AREAS FOR IMPROVEMENT
+
+SQL Server -> Adjust Decimal types using source precision & scale
 
 Email: zlzforever@163.com

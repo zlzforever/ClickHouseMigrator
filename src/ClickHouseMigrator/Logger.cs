@@ -4,7 +4,7 @@ namespace ClickHouseMigrator
 {
 	public static class Logger
 	{
-		private static object Locker = new object();
+		private static readonly object Locker = new();
 
 		public static void Information(string msg)
 		{

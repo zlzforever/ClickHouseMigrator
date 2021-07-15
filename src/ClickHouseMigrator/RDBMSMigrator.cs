@@ -9,9 +9,7 @@ namespace ClickHouseMigrator
 	public abstract class RDBMSMigrator : Migrator
 	{
 		private Lazy<IDataReader> _reader;
-
-		protected abstract Lazy<string> ConnectionString { get; }
-
+		
 		protected override (dynamic[][] Data, int Length) FetchRows(int count)
 		{
 			var list = new dynamic[count][];
@@ -43,7 +41,6 @@ namespace ClickHouseMigrator
 
 		protected override void InitializeTable()
 		{
-
 			//this is readonly at least for SQL Server (had to move it to FetchColumns like MySql)
 			//and for MySQL does not make sense because the mapping type is translated at FetchColumns()
 			//foreach (var column in Columns.Value)

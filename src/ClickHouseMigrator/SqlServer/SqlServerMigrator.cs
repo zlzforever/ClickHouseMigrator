@@ -21,7 +21,7 @@ namespace ClickHouseMigrator.SqlServer
 								 TC.CONSTRAINT_NAME = KU.CONSTRAINT_NAME AND
 								 KU.table_name = '{Options.SourceTable}'
 					ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;"
-				).ToList();
+			).ToList();
 
 			var columns = conn
 				.Query(
@@ -43,8 +43,6 @@ namespace ClickHouseMigrator.SqlServer
 			return columnDefines;
 		}
 
-		protected override Lazy<string> ConnectionString => new Lazy<string>(() =>
-			$"Server=tcp:{Options.SourceHost},{Options.SourcePort};Initial Catalog={Options.SourceDatabase};Password={Options.SourcePassword};Persist Security Info=False;User ID={Options.SourceUser};MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=3000;");
 
 		protected override string ConvertToClickHouseDataType(string type)
 		{
@@ -56,75 +54,76 @@ namespace ClickHouseMigrator.SqlServer
 				case "smalldatetime":
 				case "datetime2":
 				case "datetime":
-					{
-						return "DateTime";
-					}
+				{
+					return "DateTime";
+				}
 				case "date":
-					{
-						return "Date";
-					}
+				{
+					return "Date";
+				}
 				case "tinyint":
-					{
-						return "UInt8";
-					}
+				{
+					return "UInt8";
+				}
 				case "smallint":
-					{
-						return "Int16";
-					}
+				{
+					return "Int16";
+				}
 				case "int":
-					{
-						return "Int32";
-					}
+				{
+					return "Int32";
+				}
 				case "money":
-					{
-						return "Decimal64(4)";
-					}
+				{
+					return "Decimal64(4)";
+				}
 				case "smallmoney":
-					{
-						return "Decimal32(4)";
-					}
+				{
+					return "Decimal32(4)";
+				}
 				case "bit":
-					{
-						// Clickhouse has no Boolean
-						return "UInt8";
-					}
+				{
+					// Clickhouse has no Boolean
+					return "UInt8";
+				}
 				case "float":
-					{
-						return "Float64";
-					}
+				{
+					return "Float64";
+				}
 				case "real":
-					{
-						return "Float32";
-					}
+				{
+					return "Float32";
+				}
 				case "numeric":
 				case "decimal":
-					{
-						//todo get scale & precision from sys.columns -> Float is incorrect because it is an approximation!
-						return "Float64";
-					}
+				{
+					//todo get scale & precision from sys.columns -> Float is incorrect because it is an approximation!
+					return "Float64";
+				}
 				case "bigint":
-					{
-						return "Int64";
-					}
+				{
+					return "Int64";
+				}
 				case "uniqueidentifier":
-					{
-						return "UUID";
-					}
+				{
+					return "UUID";
+				}
 				//case "char"/nchar:
 				//	{
 				//      TODO: must receive size
 				//		return "FixedString(n)
 				//	}
 				default:
-					{
-						return "String";
-					}
+				{
+					return "String";
+				}
 			}
 		}
 
 		protected override IDbConnection CreateDbConnection()
 		{
-			var conn = new SqlConnection(ConnectionString.Value);
+			var conn = new SqlConnection(
+				$"Server=tcp:{Options.SourceHost},{Options.SourcePort};Initial Catalog={Options.SourceDatabase};Password={Options.SourcePassword};Persist Security Info=False;User ID={Options.SourceUser};MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Connection Timeout=3000;");
 			return conn;
 		}
 

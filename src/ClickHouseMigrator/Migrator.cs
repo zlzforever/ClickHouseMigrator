@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,7 @@ namespace ClickHouseMigrator
 		private string _table;
 		private string _connectionString;
 		private DateTime _start;
-		protected Lazy<List<ColumnDefine>> Columns => new Lazy<List<ColumnDefine>>(FetchTablesColumns);
+		private List<ColumnDefine> _columns;
 		protected abstract List<ColumnDefine> FetchTablesColumns();
 		protected abstract (dynamic[][] Data, int Length) FetchRows(int count);
 		protected abstract void Initialize(IConfiguration configuration);
@@ -61,15 +60,17 @@ namespace ClickHouseMigrator
 				return Task.CompletedTask;
 			}
 
+			_columns = FetchTablesColumns();
+			
 			if (Options.Lowercase)
 			{
-				foreach (var column in Columns.Value)
+				foreach (var column in _columns)
 				{
-					column.Name = column.Name.ToLower();
+					column.Name = column.Name.ToLowerInvariant();
 				}
 
-				_database = _database.ToLower();
-				_table = _table.ToLower();
+				_database = _database.ToLowerInvariant();
+				_table = _table.ToLowerInvariant();
 			}
 
 			InitializeTable();
@@ -100,11 +101,9 @@ namespace ClickHouseMigrator
 
 		protected virtual string GenerateCreateTableSql()
 		{
-			//As Columns is lazy this is to not launch FetchDataColumns twice
-			var columns = Columns.Value;
-			var columnsSql = string.Join(", ", columns.Select(x => $"`{x.Name}` {x.DataType}"));
+			var columnsSql = string.Join(", ", _columns.Select(x => $"`{x.Name}` {x.DataType}"));
 
-			var primaryColumns = columns.Where(x => x.IsPrimary).ToList();
+			var primaryColumns = _columns.Where(x => x.IsPrimary).ToList();
 			var primaryColumnsSql = string.Join(", ", primaryColumns.Select(x => $"`{x.Name}`"));
 
 			//todo: As SQL Server columnStores does not have Primary Key, think about howto create the PK and OrderBy in CH
@@ -119,7 +118,7 @@ namespace ClickHouseMigrator
 
 		private long Migrate()
 		{
-			var columnNames = Columns.Value.Select(x => $"`{x.Name}`").ToArray();
+			var columnNames = _columns.Select(x => $"`{x.Name}`").ToArray();
 
 			long total = 0;
 			var columnsSql = string.Join(", ", columnNames);
@@ -256,7 +255,7 @@ namespace ClickHouseMigrator
 				{"--src-password", "SourcePassword"},
 				{"--src-database", "SourceDatabase"},
 				{"--src-table", "SourceTable"},
-				{"--file", "File"},
+				{"--file", "File"}
 			});
 			var configuration = configurationBuilder.Build();
 			Options = new ClickHouseOptions(configuration);

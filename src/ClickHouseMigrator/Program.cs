@@ -8,7 +8,7 @@ namespace ClickHouseMigrator
 {
 	public static class Program
 	{
-		public static string Line =
+		private static string Line =
 			"=======================================================================================================================";
 
 		static async Task Main(string[] args)

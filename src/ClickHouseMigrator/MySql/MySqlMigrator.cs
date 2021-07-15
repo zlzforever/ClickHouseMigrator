@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Dapper;
 using MySqlConnector;
 
@@ -29,57 +30,37 @@ namespace ClickHouseMigrator.MySql
 			return columnDefines;
 		}
 
-		protected override Lazy<string> ConnectionString => new Lazy<string>(
-			$"Data Source={Options.SourceHost};Database='{Options.SourceDatabase}';User ID={Options.SourceUser}; Password={Options.SourcePassword};Port={Options.SourcePort};SslMode=None;Connection Timeout=120");
-
 		protected override string ConvertToClickHouseDataType(string type)
 		{
-			var sizePrefixIndex = type.IndexOf('(');
-			var normalTypeName = sizePrefixIndex <= 0 ? type : type.Substring(0, sizePrefixIndex);
-			switch (normalTypeName)
+			var normalTypeName =
+				Regex.Replace(type, @"[0-9()]+",
+					"");
+			return normalTypeName switch
 			{
-				case "timestamp":
-				{
-					return "DateTime";
-				}
-				case "date":
-				{
-					return "Date";
-				}
-				case "tinyint":
-				{
-					return "UInt8";
-				}
-				case "smallint":
-				{
-					return "Int16";
-				}
-				case "int":
-				{
-					return "Int32";
-				}
-				case "float":
-				{
-					return "Float32";
-				}
-				case "double":
-				{
-					return "Float64";
-				}
-				case "bigint":
-				{
-					return "Int64";
-				}
-				default:
-				{
-					return "String";
-				}
-			}
+				"tinyint unsigned" => "UInt8",
+				"smallint unsigned" => "UInt16",
+				"int unsigned" => "UInt32",
+				"mediumint unsigned" => "UInt32",
+				"datetime" => "DateTime",
+				"timestamp" => "DateTime",
+				"date" => "Date",
+				"tinyint" => "UInt8",
+				"smallint" => "Int16",
+				"int" => "Int32",
+				"mediumint" => "Int32",
+				"bigint unsigned" => "UInt64",
+				"float" => "Float32",
+				"double" => "Float64",
+				"decimal" => "Float64",
+				"bigint" => "Int64",
+				_ => "String"
+			};
 		}
 
 		protected override IDbConnection CreateDbConnection()
 		{
-			var conn = new MySqlConnection(ConnectionString.Value);
+			var conn = new MySqlConnection(
+				$"Data Source={Options.SourceHost};Database='{Options.SourceDatabase}';User ID={Options.SourceUser}; Password={Options.SourcePassword};Port={Options.SourcePort};SslMode=None;Connection Timeout=120");
 			return conn;
 		}
 

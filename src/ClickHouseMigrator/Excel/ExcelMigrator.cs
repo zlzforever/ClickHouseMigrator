@@ -46,7 +46,7 @@ namespace ClickHouseMigrator.Excel
 
 		protected override Dictionary<string, string> GetSwitchMappings()
 		{
-			return new Dictionary<string, string>
+			return new()
 			{
 				{"--sheets", "Sheets"},
 				{"--start-row", "StartRow"},

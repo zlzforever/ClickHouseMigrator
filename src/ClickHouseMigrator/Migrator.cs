@@ -37,7 +37,7 @@ namespace ClickHouseMigrator
 			Initialize(externalConfiguration);
 
 			_connectionString =
-				$"Host={Options.Host};Database=default;Port={Options.Port};User={Options.User};Password={Options.Password};Compress=True;Compressor=lz4;SocketTimeout=10000;CheckCompressedHash=False;BufferSize=32768;";
+				$"Host={Options.Host};Database={Options.Database};Port={Options.Port};User={Options.User};Password={Options.Password};Compress=True;Compressor=lz4;SocketTimeout=10000;CheckCompressedHash=False;BufferSize=32768;";
 
 			_database = string.IsNullOrWhiteSpace(Options.Database) ? Options.SourceDatabase : Options.Database;
 			_table = string.IsNullOrWhiteSpace(Options.Table) ? Options.SourceTable : Options.Table;

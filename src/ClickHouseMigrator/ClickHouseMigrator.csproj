@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
@@ -29,12 +29,12 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="5.0.0" />
-        <PackageReference Include="ClickHouse.Ado" Version="1.2.6" />
-        <PackageReference Include="Dapper" Version="2.0.78" />
-        <PackageReference Include="ClosedXML" Version="0.95.4" />
-        <PackageReference Include="MySqlConnector" Version="1.2.1" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="8.0.0" />
+        <PackageReference Include="ClickHouse.Ado" Version="2.0.2.2" />
+        <PackageReference Include="Dapper" Version="2.1.28" />
+        <PackageReference Include="ClosedXML" Version="0.102.2" />
+        <PackageReference Include="MySqlConnector" Version="2.3.4" />
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Properties\" />

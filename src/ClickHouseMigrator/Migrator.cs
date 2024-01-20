@@ -16,7 +16,7 @@ namespace ClickHouseMigrator
 		private string _connectionString;
 		private DateTime _start;
 		private List<ColumnDefine> _columns;
-		protected abstract List<ColumnDefine> FetchTablesColumns();
+		protected abstract List<ColumnDefine> FetchTableColumns();
 		protected abstract (dynamic[][] Data, int Length) FetchRows(int count);
 		protected abstract void Initialize(IConfiguration configuration);
 
@@ -60,7 +60,7 @@ namespace ClickHouseMigrator
 				return Task.CompletedTask;
 			}
 
-			_columns = FetchTablesColumns();
+			_columns = FetchTableColumns();
 			
 			if (Options.Lowercase)
 			{

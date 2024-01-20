@@ -119,7 +119,7 @@ namespace ClickHouseMigrator.Excel
 			var isEmpty = true;
 			foreach (var column in columns)
 			{
-				var value = row.Cell(column.Index)?.Value?.ToString()?.Trim();
+				var value = row.Cell(column.Index).Value.ToString()?.Trim();
 
 				if (!string.IsNullOrWhiteSpace(value))
 				{
@@ -154,7 +154,7 @@ namespace ClickHouseMigrator.Excel
 
 			foreach (var header in worksheet.Row(1).Cells())
 			{
-				var value = header?.Value?.ToString()?.Trim();
+				var value = header.Value.ToString()?.Trim();
 				// 标题内容为空认为表格到底
 				if (string.IsNullOrWhiteSpace(value))
 				{

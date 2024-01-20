@@ -154,10 +154,21 @@ namespace ClickHouseMigrator
 							var data = result.Length == Options.Batch
 								? result.Data
 								: result.Data.Where(x => x != null);
+							var dataList = data.ToList();
+							for (int i = 0; i < dataList.Count; i++)
+							{
+								var row = dataList[i];
+								for (int j = 0; j < row.Length; j++)
+								{
+									var col = row[j];
+									if (((object)col).GetType() == typeof(decimal))
+										row[j] = (double)col;
+								}
+							}
 							command.Parameters.Add(new ClickHouseParameter
 							{
 								ParameterName = "bulk",
-								Value = data
+								Value = dataList
 							});
 
 							//todo fails if there is a column if NULL
